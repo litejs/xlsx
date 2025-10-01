@@ -1,6 +1,6 @@
 {
   "name": "@litejs/xlsx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Create XLSX files",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
