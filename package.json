@@ -1,0 +1,24 @@
+{
+  "name": "@litejs/xlsx",
+  "version": "0.0.1",
+  "description": "Create XLSX files",
+  "license": "MIT",
+  "author": "Lauri Rooden <lauri@rooden.ee>",
+  "keywords": [
+    "xlsx",
+    "litejs"
+  ],
+  "main": "xlsx.js",
+  "files": [],
+  "repository": "github:litejs/xlsx",
+  "scripts": {
+    "lint": "npx jshint -c .github/jshint.json *.js",
+    "test": "lj t --tz='Europe/Tallinn' test/index.js"
+  },
+  "devDependencies": {
+    "@litejs/cli": "25.1.1"
+  },
+  "dependencies": {
+    "@litejs/zip": "25.10.0"
+  }
+}
