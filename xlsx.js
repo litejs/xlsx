@@ -38,7 +38,7 @@ exports.createFiles = workbook => {
 								) :
 								typeof val === "number" ? '"><v>' + val + '</v>' :
 								val instanceof Date ? '" s="1"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
-								''
+								'">'
 							) + '</c>'
 						).join('') + '</row>'
 					).join('') + `</sheetData></worksheet>`

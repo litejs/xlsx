@@ -11,7 +11,7 @@ describe("xlsx", function() {
 					name: 'Products',
 					data: [
 						['Apple', 1.99, 10],
-						['Banana', 0.99, 15],
+						['Banana', 0.99, null],
 						['Orange', 2.49, 8]
 					]
 				},
