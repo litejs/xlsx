@@ -9,15 +9,22 @@ describe("xlsx", function() {
 			sheets: [
 				{
 					name: 'Products',
-					cols: '20,10,15',
+					cols: '20,,15',
 					data: [
-						['Apple', 1.99, 10],
+						['Apple', 1.99, false],
 						['Banana', 0.99, null],
-						['Orange', 2.49, 8],
+						['Orange', { value: 2.49 }, true],
 						null,
 						['Sum', {style: 'bold', value: '=SUM(B1:B3)'}, new Date(1514900750001)]
 					]
 				},
+				[
+					['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA']
+				],
+				{
+					name: 'Empty Sheet',
+					data: []
+				}
 			]
 		})
 		.then(uint8 => {

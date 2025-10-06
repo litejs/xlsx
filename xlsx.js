@@ -39,6 +39,7 @@ var createZip = require("@litejs/zip").createZip
 									'" t="inlineStr"><is><t>' + val.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</t></is>'
 								) :
 								typeof val === "number" ? '"><v>' + val + '</v>' :
+								typeof val === "boolean" ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
 								val instanceof Date ? '" s="1"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 								'">'
 							) + '</c>'
