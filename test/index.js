@@ -9,7 +9,7 @@ describe("xlsx", function() {
 			sheets: [
 				{
 					name: 'Products',
-					widths: '20,10,15',
+					cols: '20,10,15',
 					data: [
 						['Apple', 1.99, 10],
 						['Banana', 0.99, null],

@@ -18,7 +18,7 @@ var createZip = require("@litejs/zip").createZip
 			types += '<Override PartName="' + name + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
 			relations += '<Relationship Id="rId' + i + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + name + '"/>'
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
-			var cols = sheet.widths ? sheet.widths.split(",").map(
+			var cols = sheet.cols ? sheet.cols.split(",").map(
 				(w, i) => w ? '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>' : ''
 			).join('') : ''
 			, rowIndex = 0
