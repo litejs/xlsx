@@ -20,6 +20,7 @@ var createZip = require("@litejs/zip").createZip
 			var cols = sheet.widths ? sheet.widths.split(",").map(
 				(w, i) => w ? '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>' : ''
 			).join('') : ''
+			, rowIndex = 0
 
 			return {
 				name,
@@ -28,7 +29,7 @@ var createZip = require("@litejs/zip").createZip
 					(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length) + sheet.data.length + '"/>' : '') +
 					(cols ? '<cols>' + cols + '</cols>' : '') +
 					'<sheetData>' + sheet.data.map(
-						(row, rowIndex) => '<row r="' + (++rowIndex) + '">' + row.map(
+						row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
 							(val, col) => '<c r="' + toCol(col) + rowIndex + (
 								typeof val === "string" && val[0] ? (
 									val[0] === "=" ? '"><f>' + val.slice(1) + '</f>' :
@@ -38,7 +39,7 @@ var createZip = require("@litejs/zip").createZip
 								val instanceof Date ? '" s="1"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 								'">'
 							) + '</c>'
-						).join('') + '</row>'
+						).join('') + '</row>' : ''
 					).join('') + `</sheetData></worksheet>`
 			}
 		}
