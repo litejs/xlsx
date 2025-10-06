@@ -9,7 +9,12 @@ var createZip = require("@litejs/zip").createZip
 	, relations = ''
 	, sheets = ''
 	, isObj = obj => !!obj && obj.constructor === Object
+	, isStr = str => typeof str === "string"
 	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
+	, toXml = (name, attrs, childs) => (
+		attrs = attrs && Object.entries(attrs).map(a => a[0] + '="' + a[1] + '"').join(' '),
+		'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
+	)
 	, files = workbook.sheets.map(
 		(sheet, i, name) => {
 			sheet = Array.isArray(sheet)? { data: sheet } : sheet
@@ -18,9 +23,10 @@ var createZip = require("@litejs/zip").createZip
 			types += '<Override PartName="' + name + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
 			relations += '<Relationship Id="rId' + i + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + name + '"/>'
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
-			var cols = sheet.cols ? sheet.cols.split(",").map(
-				(w, i) => w ? '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>' : ''
-			).join('') : ''
+			var cols = sheet.cols
+			if (cols) cols = (isStr(cols) ? cols.split(",") : cols).map(
+				(w, i) => w ? toXml('col', { min: (i + 1), max: (i + 1), ...(isStr(w) ? {with:w, customWidth:1} : w)}) : ''
+			).join('')
 			, rowIndex = 0
 
 			return {
@@ -34,7 +40,7 @@ var createZip = require("@litejs/zip").createZip
 							(val, col, tmp) => '<c r="' + toCol(col) + rowIndex + (
 								isObj(val) ? (tmp = val.style === 'bold' ? '" s="2' : '', val = val.value, tmp) : ''
 							) + (
-								typeof val === "string" && val[0] ? (
+								val && isStr(val) ? (
 									val[0] === "=" ? '"><f>' + val.slice(1) + '</f>' :
 									'" t="inlineStr"><is><t>' + val.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</t></is>'
 								) :

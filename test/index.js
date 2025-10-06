@@ -9,13 +9,13 @@ describe("xlsx", function() {
 			sheets: [
 				{
 					name: 'Products',
-					cols: '20,,15',
+					cols: [{width:20,bestFit:1,customWidth:1},0,'15'],
 					data: [
 						['Apple', 1.99, false],
 						['Banana', 0.99, null],
 						['Orange', { value: 2.49 }, true],
 						null,
-						['Sum', {style: 'bold', value: '=SUM(B1:B3)'}, new Date(1514900750001)]
+						['Sum of all fruits', {style: 'bold', value: '=SUM(B1:B3)'}, new Date(1514900750001)]
 					]
 				},
 				[
