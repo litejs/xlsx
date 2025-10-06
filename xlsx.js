@@ -8,7 +8,7 @@ var createZip = require("@litejs/zip").createZip
 	, types = ''
 	, relations = ''
 	, sheets = ''
-	, toCol = num => num < 0 ? '' : toCol((0 | num / 26) - 1) + String.fromCharCode(65 + num % 26)
+	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 	, files = workbook.sheets.map(
 		(sheet, i, name) => {
 			sheet = Array.isArray(sheet)? { data: sheet } : sheet
