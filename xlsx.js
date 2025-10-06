@@ -1,9 +1,7 @@
 
 
 var createZip = require("@litejs/zip").createZip
-
-
-exports.createFiles = workbook => {
+, createFiles = workbook => {
     var xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
 	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
 	, excelEpoch = new Date(1899, 11, 30)
@@ -73,7 +71,7 @@ exports.createFiles = workbook => {
 }
 
 
-exports.createXlsx = workbook => createZip(exports.createFiles(workbook))
+exports.createXlsx = (workbook, opts, next) => createZip(createFiles(workbook), opts, next)
 
 
 
