@@ -8,6 +8,7 @@ var createZip = require("@litejs/zip").createZip
 	, types = ''
 	, relations = ''
 	, sheets = ''
+	, isObj = obj => !!obj && obj.constructor === Object
 	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 	, files = workbook.sheets.map(
 		(sheet, i, name) => {
@@ -30,7 +31,9 @@ var createZip = require("@litejs/zip").createZip
 					(cols ? '<cols>' + cols + '</cols>' : '') +
 					'<sheetData>' + sheet.data.map(
 						row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
-							(val, col) => '<c r="' + toCol(col) + rowIndex + (
+							(val, col, tmp) => '<c r="' + toCol(col) + rowIndex + (
+								isObj(val) ? (tmp = val.style === 'bold' ? '" s="2' : '', val = val.value, tmp) : ''
+							) + (
 								typeof val === "string" && val[0] ? (
 									val[0] === "=" ? '"><f>' + val.slice(1) + '</f>' :
 									'" t="inlineStr"><is><t>' + val.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</t></is>'
@@ -60,7 +63,7 @@ var createZip = require("@litejs/zip").createZip
 		// Add this to your file list
 		{
 			name: 'styles.xml',
-			content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="dd.mm.yyyy"/><!-- Date format --><numFmt numFmtId="165" formatCode="dd.mm.yyyy hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="1"><font/></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellXfs count="2"><xf numFmtId="0"/><xf numFmtId="164" applyNumberFormat="1"/></cellXfs></styleSheet>'
+			content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/><!-- Date format --><numFmt numFmtId="165" formatCode="yyyy-mm-dd hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/><b/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellXfs count="3"><xf fontId="0" applyFont="1"/><xf numFmtId="164" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" applyFont="1"/></cellXfs></styleSheet>'
 		},
 		{
 			name: 'workbook.xml',
