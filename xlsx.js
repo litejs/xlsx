@@ -3,6 +3,7 @@
 var createZip = require("@litejs/zip").createZip
 , createFiles = workbook => {
     var xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
+	, schemaPackage = 'http://schemas.openxmlformats.org/package/2006/'
 	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
 	, excelEpoch = new Date(1899, 11, 30)
 	, types = ''
@@ -13,6 +14,7 @@ var createZip = require("@litejs/zip").createZip
 	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 	, toXml = (name, attrs, childs) => (
 		attrs = attrs && Object.entries(attrs).map(a => a[0] + '="' + a[1] + '"').join(' '),
+		childs = childs && Object.entries(childs).map(a => a[1].map(b => toXml(a[0], b)).join('')).join(''),
 		'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 	)
 	, files = workbook.sheets.map(
@@ -61,7 +63,11 @@ var createZip = require("@litejs/zip").createZip
 		},
 		{
 			name: '_rels/.rels',
-			content: xmlHead + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="workbook.xml"/></Relationships>'
+			content: xmlHead + toXml('Relationships', { xmlns: schemaPackage + 'relationships' }, {
+				Relationship: [
+					{ Id: 'rId1', Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument', Target: 'workbook.xml' }
+				]
+			})
 		},
 		{
 			name: '_rels/workbook.xml.rels',
