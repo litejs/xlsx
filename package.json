@@ -1,10 +1,11 @@
 {
   "name": "@litejs/xlsx",
   "version": "0.0.2",
-  "description": "Create XLSX files",
+  "description": "Lightweight (<10KB) XLSX file creator for Browser and Node.js",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
   "keywords": [
+    "excel",
     "xlsx",
     "litejs"
   ],

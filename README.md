@@ -10,8 +10,11 @@
 LiteJS Xlsx &ndash; [![Coverage][1]][2] [![Size][3]][4] [![Buy Me A Tea][5]][6]
 ===========
 
-JavaScript library for creating XLSX files in Browser or Server.
+Lightweight (<10KB) XLSX file creator for Browser and Node.js.
 
+Why?  
+Sometimes you just want to add `Download as Excel` button next to `Download as csv`.  
+Sometimes you just want to send a simple xlsx with email without adding 30MB of packages.
 
 Examples
 --------
@@ -20,14 +23,16 @@ Examples
 const { createXlsx } = require("@litejs/xlsx");
 const fileAsUint8Array = await createXlsx({
     sheets: [
-		{
-			name: 'Products',
-			data: [
-				['Apple', 1.99, 10, new Date()],
-				['Banana', 0.99, 15],
-				['Orange', 2.49, 8]
-			]
-		},
+        {
+            name: 'Products',
+            cols: '20,10,10', // Simple column widths
+            data: [
+                ['Apple', 1.99, 10],
+                ['Banana', 0.99, 15],
+                ['Orange', 2.49, 8],
+                ['Totals', '=SUM(B1:B3)', {style: 'bold', value: '=SUM(C1:C3)'}, new Date()]
+            ]
+        },
     ]
 })
 ```
