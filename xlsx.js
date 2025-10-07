@@ -11,10 +11,11 @@ var createZip = require("@litejs/zip").createZip
 	, sheets = ''
 	, isObj = obj => !!obj && obj.constructor === Object
 	, isStr = str => typeof str === "string"
+	, mapEntries = (obj, fn, separator) => obj && Object.entries(obj).map(fn).join(separator)
 	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 	, toXml = (name, attrs, childs) => (
-		attrs = attrs && Object.entries(attrs).map(a => a[0] + '="' + a[1] + '"').join(' '),
-		childs = childs && Object.entries(childs).map(a => a[1].map(b => toXml(a[0], b)).join('')).join(''),
+		attrs = mapEntries(attrs, a => a[0] + '="' + a[1] + '"', ' '),
+		childs = mapEntries(childs, a => a[1].map(b => toXml(a[0], b)).join(''), ''),
 		'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 	)
 	, files = workbook.sheets.map(
