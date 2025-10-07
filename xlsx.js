@@ -7,7 +7,11 @@ var createZip = require("@litejs/zip").createZip
 	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
 	, excelEpoch = new Date(1899, 11, 30)
 	, types = ''
-	, relations = ''
+	, rels = [{ Id: 'rId0', Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles', Target: 'styles.xml' }]
+	, relsFile = (name, Relationship) => ({
+		name,
+		content: xmlHead + toXml('Relationships', { xmlns: schemaPackage + 'relationships' }, { Relationship })
+	})
 	, sheets = ''
 	, isObj = obj => !!obj && obj.constructor === Object
 	, isStr = str => typeof str === "string"
@@ -24,7 +28,7 @@ var createZip = require("@litejs/zip").createZip
 			i++
 			name = 'sheet' + i + '.xml'
 			types += '<Override PartName="' + name + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-			relations += '<Relationship Id="rId' + i + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + name + '"/>'
+			rels.push({ Id: 'rId' + i, Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet', Target: name })
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
 			var cols = sheet.cols
 			if (cols) cols = (isStr(cols) ? cols.split(",") : cols).map(
@@ -62,19 +66,10 @@ var createZip = require("@litejs/zip").createZip
 			name: '[Content_Types].xml',
 			content: xmlHead + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' + types + '</Types>'
 		},
-		{
-			name: '_rels/.rels',
-			content: xmlHead + toXml('Relationships', { xmlns: schemaPackage + 'relationships' }, {
-				Relationship: [
-					{ Id: 'rId1', Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument', Target: 'workbook.xml' }
-				]
-			})
-		},
-		{
-			name: '_rels/workbook.xml.rels',
-			content: xmlHead + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId0" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' + relations + '</Relationships>'
-		},
-		// Add this to your file list
+		relsFile('_rels/.rels', [
+			{ Id: 'rId1', Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument', Target: 'workbook.xml' }
+		]),
+		relsFile('_rels/workbook.xml.rels', rels),
 		{
 			name: 'styles.xml',
 			content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/><!-- Date format --><numFmt numFmtId="165" formatCode="yyyy-mm-dd hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/><b/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellXfs count="3"><xf fontId="0" applyFont="1"/><xf numFmtId="164" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" applyFont="1"/></cellXfs></styleSheet>'
