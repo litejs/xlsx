@@ -3,14 +3,15 @@
 var createZip = require("@litejs/zip").createZip
 , createFiles = workbook => {
     var xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
-	, schemaPackage = 'http://schemas.openxmlformats.org/package/2006/'
+	, nsPackage = 'http://schemas.openxmlformats.org/package/2006/'
+	, nsRels = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
 	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
 	, excelEpoch = new Date(1899, 11, 30)
 	, types = ''
-	, rels = [{ Id: 'rId0', Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles', Target: 'styles.xml' }]
+	, rels = [{ Id: 'rId0', Type: nsRels + 'styles', Target: 'styles.xml' }]
 	, relsFile = (name, Relationship) => ({
 		name,
-		content: xmlHead + toXml('Relationships', { xmlns: schemaPackage + 'relationships' }, { Relationship })
+		content: xmlHead + toXml('Relationships', { xmlns: nsPackage + 'relationships' }, { Relationship })
 	})
 	, sheets = ''
 	, isObj = obj => !!obj && obj.constructor === Object
@@ -28,7 +29,7 @@ var createZip = require("@litejs/zip").createZip
 			i++
 			name = 'sheet' + i + '.xml'
 			types += '<Override PartName="' + name + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-			rels.push({ Id: 'rId' + i, Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet', Target: name })
+			rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
 			var cols = sheet.cols
 			if (cols) cols = (isStr(cols) ? cols.split(",") : cols).map(
@@ -67,7 +68,7 @@ var createZip = require("@litejs/zip").createZip
 			content: xmlHead + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' + types + '</Types>'
 		},
 		relsFile('_rels/.rels', [
-			{ Id: 'rId1', Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument', Target: 'workbook.xml' }
+			{ Id: 'rId1', Type: nsRels + 'officeDocument', Target: 'workbook.xml' }
 		]),
 		relsFile('_rels/workbook.xml.rels', rels),
 		{
