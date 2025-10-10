@@ -18,6 +18,7 @@ describe("xlsx", function() {
 						['Sum of all fruits', {style: 'bold', value: '=SUM(B1:B3)'}, new Date(1514900750001)]
 					]
 				},
+				null,
 				[
 					['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA']
 				],

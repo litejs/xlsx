@@ -26,7 +26,7 @@ var createZip = require("@litejs/zip").createZip
 		childs = mapEntries(childs, a => a[1].map(b => toXml(a[0], b)).join(''), ''),
 		'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 	)
-	, files = workbook.sheets.map(
+	, files = workbook.sheets.filter(s => s).map(
 		(sheet, i, name) => {
 			sheet = Array.isArray(sheet)? { data: sheet } : sheet
 			i++
