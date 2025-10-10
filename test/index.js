@@ -1,11 +1,11 @@
 
 describe("xlsx", function() {
 	require("@litejs/cli/snapshot.js")
-	var createXlsx = require("..").createXlsx
+	var { createFiles, createXlsx } = require("..")
 
 	test("Readme", typeof CompressionStream !== "undefined" && typeof Response !== "undefined" && function(assert, mock) {
 		mock.swap(Date, "now", mock.fn(1514900750001))
-		createXlsx({
+		var workbook = {
 			sheets: [
 				{
 					name: 'Products',
@@ -26,7 +26,9 @@ describe("xlsx", function() {
 					data: []
 				}
 			]
-		})
+		}
+		assert.matchSnapshot("test/snap/readme.json", JSON.stringify(createFiles(workbook), null, 2))
+		createXlsx(workbook)
 		.then(uint8 => {
 			assert.matchSnapshot("test/snap/readme.xlsx", uint8)
 			assert.end()
