@@ -35,10 +35,10 @@ var createZip = require("@litejs/zip").createZip
 			rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
 			var cols = sheet.cols
+			, rowIndex = 0
 			if (cols) cols = (isStr(cols) ? cols.split(",") : cols).map(
 				(w, i) => w ? toXml('col', { min: (i + 1), max: (i + 1), ...(isStr(w) ? {width:w, customWidth:1} : w)}) : ''
 			).join('')
-			, rowIndex = 0
 
 			return {
 				name,
