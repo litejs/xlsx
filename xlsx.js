@@ -8,8 +8,8 @@ var createZip = require("@litejs/zip").createZip
 	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
 	, excelEpoch = new Date(1899, 11, 30)
 	, types = [
-		{ PartName: "/styles.xml", ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml' },
-		{ PartName: "/workbook.xml", ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml' }
+		{ PartName: "/xl/styles.xml", ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml' },
+		{ PartName: "/xl/workbook.xml", ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml' }
 	]
 	, rels = [{ Id: 'rId0', Type: nsRels + 'styles', Target: 'styles.xml' }]
 	, relsFile = (name, Relationship) => ({
@@ -30,8 +30,8 @@ var createZip = require("@litejs/zip").createZip
 		(sheet, i, name) => {
 			sheet = Array.isArray(sheet)? { data: sheet } : sheet
 			i++
-			name = 'sheet' + i + '.xml'
-			types.push({ PartName: name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
+			name = 'worksheets/sheet' + i + '.xml'
+			types.push({ PartName: "/xl/" + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
 			rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
 			var cols = sheet.cols
@@ -41,10 +41,10 @@ var createZip = require("@litejs/zip").createZip
 			).join('')
 
 			return {
-				name,
+				name: 'xl/' + name,
 				content: xmlHead +
 					'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-					(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length) + sheet.data.length + '"/>' : '') +
+					(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length - 1) + sheet.data.length + '"/>' : '') +
 					(cols ? '<cols>' + cols + '</cols>' : '') +
 					'<sheetData>' + sheet.data.map(
 						row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
@@ -76,14 +76,14 @@ var createZip = require("@litejs/zip").createZip
 				Override: types
 			})
 		},
-		relsFile('_rels/.rels', [{ Id: 'rId1', Type: nsRels + 'officeDocument', Target: 'workbook.xml' }]),
-		relsFile('_rels/workbook.xml.rels', rels),
+		relsFile('_rels/.rels', [{ Id: 'rId1', Type: nsRels + 'officeDocument', Target: 'xl/workbook.xml' }]),
+		relsFile('xl/_rels/workbook.xml.rels', rels),
 		{
-			name: 'styles.xml',
+			name: 'xl/styles.xml',
 			content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/><!-- Date format --><numFmt numFmtId="165" formatCode="yyyy-mm-dd hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/><b/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellXfs count="3"><xf fontId="0" applyFont="1"/><xf numFmtId="164" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" applyFont="1"/></cellXfs></styleSheet>'
 		},
 		{
-			name: 'workbook.xml',
+			name: 'xl/workbook.xml',
 			content: xmlHead + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + sheets + '</sheets></workbook>'
 		}
 	)
