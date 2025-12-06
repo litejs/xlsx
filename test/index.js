@@ -24,6 +24,7 @@ describe("xlsx", function() {
 				],
 				{
 					name: 'Empty Sheet',
+					cols: '20,,10',
 					data: []
 				}
 			]
