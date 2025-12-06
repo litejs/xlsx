@@ -36,16 +36,15 @@ var createZip = require('@litejs/zip').createZip
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
 			var cols = sheet.cols
 			, rowIndex = 0
-			if (cols) cols = (isStr(cols) ? cols.split(',') : cols).map(
-				(w, i) => w ? toXml('col', { min: (i + 1), max: (i + 1), ...(isStr(w) ? {width:w, customWidth:1} : w)}) : ''
-			).join('')
 
 			return {
 				name: 'xl/' + name,
 				content: xmlHead +
 					'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
 					(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length - 1) + sheet.data.length + '"/>' : '') +
-					(cols ? '<cols>' + cols + '</cols>' : '') +
+					(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
+						(w, i) => w ? { min: (i + 1), max: (i + 1), ...(isStr(w) ? {width:w, customWidth:1} : w)} : ''
+					).filter(Boolean)}) : '') +
 					'<sheetData>' + sheet.data.map(
 						row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
 							(val, col, tmp) => '<c r="' + toCol(col) + rowIndex + (
