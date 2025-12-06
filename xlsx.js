@@ -1,6 +1,6 @@
 
 
-var createZip = require("@litejs/zip").createZip
+var createZip = require('@litejs/zip').createZip
 , createFiles = workbook => {
     var xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
 	, nsPackage = 'http://schemas.openxmlformats.org/package/2006/'
@@ -8,8 +8,8 @@ var createZip = require("@litejs/zip").createZip
 	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
 	, excelEpoch = new Date(1899, 11, 30)
 	, types = [
-		{ PartName: "/xl/styles.xml", ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml' },
-		{ PartName: "/xl/workbook.xml", ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml' }
+		{ PartName: '/xl/styles.xml', ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml' },
+		{ PartName: '/xl/workbook.xml', ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml' }
 	]
 	, rels = [{ Id: 'rId0', Type: nsRels + 'styles', Target: 'styles.xml' }]
 	, relsFile = (name, Relationship) => ({
@@ -18,7 +18,7 @@ var createZip = require("@litejs/zip").createZip
 	})
 	, sheets = ''
 	, isObj = obj => !!obj && obj.constructor === Object
-	, isStr = str => typeof str === "string"
+	, isStr = str => typeof str === 'string'
 	, mapEntries = (obj, fn, separator) => obj && Object.entries(obj).map(fn).join(separator)
 	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 	, toXml = (name, attrs, childs) => (
@@ -31,12 +31,12 @@ var createZip = require("@litejs/zip").createZip
 			sheet = Array.isArray(sheet)? { data: sheet } : sheet
 			i++
 			name = 'worksheets/sheet' + i + '.xml'
-			types.push({ PartName: "/xl/" + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
+			types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
 			rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
 			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
 			var cols = sheet.cols
 			, rowIndex = 0
-			if (cols) cols = (isStr(cols) ? cols.split(",") : cols).map(
+			if (cols) cols = (isStr(cols) ? cols.split(',') : cols).map(
 				(w, i) => w ? toXml('col', { min: (i + 1), max: (i + 1), ...(isStr(w) ? {width:w, customWidth:1} : w)}) : ''
 			).join('')
 
@@ -52,16 +52,16 @@ var createZip = require("@litejs/zip").createZip
 								isObj(val) ? (tmp = val.style === 'bold' ? '" s="2' : '', val = val.value, tmp) : ''
 							) + (
 								val && isStr(val) ? (
-									val[0] === "=" ? '"><f>' + val.slice(1) + '</f>' :
+									val[0] === '=' ? '"><f>' + val.slice(1) + '</f>' :
 									'" t="inlineStr"><is><t>' + val.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</t></is>'
 								) :
-								typeof val === "number" ? '"><v>' + val + '</v>' :
-								typeof val === "boolean" ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
+								typeof val === 'number' ? '"><v>' + val + '</v>' :
+								typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
 								val instanceof Date ? '" s="1"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 								'">'
 							) + '</c>'
 						).join('') + '</row>' : ''
-					).join('') + `</sheetData></worksheet>`
+					).join('') + '</sheetData></worksheet>'
 			}
 		}
 	)
@@ -70,8 +70,8 @@ var createZip = require("@litejs/zip").createZip
 			name: '[Content_Types].xml',
 			content: xmlHead + toXml('Types', { xmlns: 'http://schemas.openxmlformats.org/package/2006/content-types' }, {
 				Default: [
-					{ Extension: "rels", ContentType: "application/vnd.openxmlformats-package.relationships+xml" },
-					{ Extension: "xml", ContentType: "application/xml" }
+					{ Extension: 'rels', ContentType: 'application/vnd.openxmlformats-package.relationships+xml' },
+					{ Extension: 'xml', ContentType: 'application/xml' }
 				],
 				Override: types
 			})
@@ -87,16 +87,12 @@ var createZip = require("@litejs/zip").createZip
 			content: xmlHead + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + sheets + '</sheets></workbook>'
 		}
 	)
-	//console.log(files)
 	return files
 }
 
 
 exports.createFiles = createFiles
 exports.createXlsx = (workbook, opts, next) => createZip(createFiles(workbook), opts, next)
-
-
-
 
 
 
