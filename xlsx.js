@@ -33,7 +33,7 @@ var createZip = require('@litejs/zip').createZip
 			name = 'worksheets/sheet' + i + '.xml'
 			types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
 			rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
-			sheets += '<sheet name="' + (sheet.name || 'Sheet' + i) + '" sheetId="' + i + '" r:id="rId' + i + '"/>'
+			sheets += toXml('sheet', { name: sheet.name || 'Sheet' + i, sheetId: i, 'r:id': 'rId' + i })
 			var cols = sheet.cols
 			, rowIndex = 0
 
