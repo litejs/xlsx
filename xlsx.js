@@ -27,6 +27,11 @@
 			childs = mapEntries(childs, a => a[1].map(b => toXml(a[0], b)).join(''), ''),
 			'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 		)
+		, xf = [
+			{ fontId: 0, applyFont: 1 },
+			{ numFmtId: 164, applyNumberFormat: 1 },
+			{ numFmtId: 0, fontId: 1, applyFont: 1 },
+		]
 		, files = workbook.sheets.filter(s => s).map(
 			(sheet, i, name) => {
 				sheet = Array.isArray(sheet)? { data: sheet } : sheet
@@ -80,7 +85,9 @@
 			relsFile('xl/_rels/workbook.xml.rels', rels),
 			{
 				name: 'xl/styles.xml',
-				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/><!-- Date format --><numFmt numFmtId="165" formatCode="yyyy-mm-dd hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/><b/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellXfs count="3"><xf fontId="0" applyFont="1"/><xf numFmtId="164" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" applyFont="1"/></cellXfs></styleSheet>'
+				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/><!-- Date format --><numFmt numFmtId="165" formatCode="yyyy-mm-dd hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/><b/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders>' +
+				toXml('cellXfs', { count: xf.length }, { xf }) +
+				'</styleSheet>'
 			},
 			{
 				name: 'xl/workbook.xml',
