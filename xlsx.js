@@ -48,7 +48,7 @@
 						).filter(Boolean)}) : '') +
 						'<sheetData>' + sheet.data.map(
 							row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
-								(val, col, tmp) => '<c r="' + toCol(col) + rowIndex + (
+								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
 									isObj(val) ? (tmp = val.style === 'bold' ? '" s="2' : '', val = val.value, tmp) : ''
 								) + (
 									val && isStr(val) ? (
@@ -59,7 +59,7 @@
 									typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
 									val instanceof Date ? '" s="1"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 									'">'
-								) + '</c>'
+								) + '</c>' : ''
 							).join('') + '</row>' : ''
 						).join('') + '</sheetData></worksheet>'
 				}
