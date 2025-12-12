@@ -20,6 +20,7 @@
 		, sheets = ''
 		, assign = Object.assign
 		, isArr = Array.isArray
+		, isNum = num => num === num && typeof num === 'number'
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
 		, isTruthy = s => s
@@ -45,10 +46,13 @@
 			{ numFmtId: 165, applyNumberFormat: 1 },
 			{ numFmtId: 0, fontId: 1, applyFont: 1 },
 		]
+		, styles = Object.fromEntries(Object.entries(workbook.styles||{}).map(a => (a[1] = xf.push({
+			fontId: a[1].font ? font.push(a[1].font) - 1 : 0
+		}) - 1, a)))
 		, getXf = val => {
 			var style = val.style
 			, format = val.format
-			, attr = style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
+			, attr = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
 			return attr ? '" s="' + attr : ''
 		}
 		, files = workbook.sheets.filter(isTruthy).map(
@@ -80,7 +84,7 @@
 										val[0] === '=' ? '"><f>' + val.slice(1) + '</f>' :
 										'" t="inlineStr"><is><t>' + val.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</t></is>'
 									) :
-									typeof val === 'number' ? '"><v>' + val + '</v>' :
+									isNum(val) ? '"><v>' + val + '</v>' :
 									typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
 									val instanceof Date ? (isArr(tmp) ? '" s="2' : '') +'"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 									'">'

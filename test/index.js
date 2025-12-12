@@ -51,5 +51,31 @@ describe("xlsx", function() {
 			assert.end()
 		})
 	})
+	test("styles", typeof CompressionStream !== "undefined" && typeof Response !== "undefined" && function(assert, mock) {
+		mock.swap(Date, "now", mock.fn(1514900750001))
+		var workbook = {
+			styles: {
+				My1: {
+					font: { sz: 15, name: "Calibri" },
+				},
+				Plain: {},
+			},
+			sheets: [
+				{
+					cols: [{ width: null }],
+					name: 'Styles',
+					data: [
+						[{style: 'My1', value: 'Apple My1'}, { style: "Plain", value: "Banana Plain" }],
+					]
+				},
+			]
+		}
+		assert.matchSnapshot("test/snap/styles.json", JSON.stringify(createFiles(workbook), null, 2))
+		createXlsx(workbook)
+		.then(uint8 => {
+			assert.matchSnapshot("test/snap/styles.xlsx", uint8)
+			assert.end()
+		})
+	})
 })
 
