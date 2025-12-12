@@ -25,11 +25,20 @@
 		, isTruthy = s => s
 		, mapEntries = (obj, fn, separator) => obj && Object.entries(obj).map(fn).join(separator)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
-		, toXml = (name, attrs, childs) => (
-			attrs = mapEntries(attrs, a => a[0] + '="' + a[1] + '"', ' '),
-			childs = mapEntries(childs, a => a[1].map(b => toXml(a[0], b)).join(''), ''),
+		, toVal = b => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { val: arr[1] }], accum), {})
+		, toXml = (name, attrs, childs, wrapVal) => (
+			attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + a[1] + '"' : '', ' '),
+			childs = mapEntries(childs, a => a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b)) : b => toXml(a[0], b)).join(''), ''),
 			'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 		)
+		, numFmt = [
+			{ numFmtId: 164, formatCode: 'yyyy-mm-dd' },
+			{ numFmtId: 165, formatCode: 'yyyy-mm-dd hh:mm:ss' },
+		]
+		, font = [
+			{ sz: 11, name: 'Calibri' },
+			{ sz: 11, name: 'Calibri', b: true },
+		]
 		, xf = [
 			{ fontId: 0, applyFont: 1 },
 			{ numFmtId: 164, applyNumberFormat: 1 },
@@ -96,7 +105,10 @@
 			relsFile('xl/_rels/workbook.xml.rels', rels),
 			{
 				name: 'xl/styles.xml',
-				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/><!-- Date format --><numFmt numFmtId="165" formatCode="yyyy-mm-dd hh:mm:ss"/><!-- DateTime format --></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/><b/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders>' +
+				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+				toXml('numFmts', { count: numFmt.length }, { numFmt }) +
+				toXml('fonts', { count: font.length }, { font }, 1) +
+				'<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders>' +
 				toXml('cellXfs', { count: xf.length }, { xf }) +
 				'</styleSheet>'
 			},
