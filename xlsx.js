@@ -18,9 +18,11 @@
 			content: xmlHead + toXml('Relationships', { xmlns: nsPackage + 'relationships' }, { Relationship })
 		})
 		, sheets = ''
+		, assign = Object.assign
 		, isArr = Array.isArray
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
+		, isTruthy = s => s
 		, mapEntries = (obj, fn, separator) => obj && Object.entries(obj).map(fn).join(separator)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 		, toXml = (name, attrs, childs) => (
@@ -40,16 +42,17 @@
 			, attr = style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
 			return attr ? '" s="' + attr : ''
 		}
-		, files = workbook.sheets.filter(s => s).map(
-			(sheet, i, name) => {
-				sheet = isArr(sheet)? { data: sheet } : sheet
+		, files = workbook.sheets.filter(isTruthy).map(
+			(sheet, i) => {
 				i++
-				name = 'worksheets/sheet' + i + '.xml'
+				sheet = isArr(sheet) ? { data: sheet } : sheet
+				var cols = sheet.cols
+				, rowIndex = 0
+				, name = 'worksheets/sheet' + i + '.xml'
+
 				types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
 				rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
 				sheets += toXml('sheet', { name: sheet.name || 'Sheet' + i, sheetId: i, 'r:id': 'rId' + i })
-				var cols = sheet.cols
-				, rowIndex = 0
 
 				return {
 					name: 'xl/' + name,
@@ -57,8 +60,8 @@
 						'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
 						(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length - 1) + sheet.data.length + '"/>' : '') +
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
-							(w, i) => w ? { min: (i + 1), max: (i + 1), ...(isStr(w) ? {width:w, customWidth:1} : w)} : ''
-						).filter(Boolean)}) : '') +
+							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
+						).filter(isTruthy)}) : '') +
 						'<sheetData>' + sheet.data.map(
 							row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
 								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
