@@ -11,11 +11,11 @@ describe("xlsx", function() {
 					name: 'Products',
 					cols: [{width:20,bestFit:1,customWidth:1},0,'15'],
 					data: [
-						['Apple', 1.99, false],
-						['Banana', 0.99, null],
-						['Orange', { value: 2.49 }, true],
+						['Apple', 1.99, 10],
+						['Banana', 0.99, 15],
+						['Orange', 2.49, 8],
 						null,
-						['Sum of all fruits', {style: 'bold', value: '=SUM(B1:B3)'}, new Date(1514900750001)]
+						['Totals', '=SUM(B1:B3)', {style: 'bold', value: '=SUM(C1:C3)'}]
 					]
 				},
 				null,
@@ -24,9 +24,24 @@ describe("xlsx", function() {
 				],
 				{
 					name: 'Empty Sheet',
-					cols: '20,,10',
 					data: []
-				}
+				},
+				{
+					name: 'Types',
+					cols: '20,40',
+					data: [
+						['null', null],
+						['true', true],
+						['false', false],
+						['Empty string', ''],
+						['Empty object', {}],
+						['Object as value', { value: {} }],
+						['Empty array', {}],
+						['Default Date', new Date(1514900750001)],
+						['Datetime', { format: 'datetime', value: new Date(1514900750001) }],
+						['Date', { format: 'date', value: new Date(1514900750001) }],
+					]
+				},
 			]
 		}
 		assert.matchSnapshot("test/snap/readme.json", JSON.stringify(createFiles(workbook), null, 2))

@@ -30,7 +30,18 @@ const fileAsUint8Array = await createXlsx({
                 ['Apple', 1.99, 10],
                 ['Banana', 0.99, 15],
                 ['Orange', 2.49, 8],
-                ['Totals', '=SUM(B1:B3)', {style: 'bold', value: '=SUM(C1:C3)'}, new Date()]
+                ['Totals', '=SUM(B1:B3)', {style: 'bold', value: '=SUM(C1:C3)'}]
+            ]
+        },
+        {
+            name: 'Types',
+            cols: '20,40',
+            data: [
+                ['true', true],
+                ['false', false],
+                ['Default Date', new Date(1514900750001)],
+                ['Datetime', { format: 'datetime', value: new Date(1514900750001) }],
+                ['Date', { format: 'date', value: new Date(1514900750001) }],
             ]
         },
     ]

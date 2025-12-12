@@ -18,6 +18,7 @@
 			content: xmlHead + toXml('Relationships', { xmlns: nsPackage + 'relationships' }, { Relationship })
 		})
 		, sheets = ''
+		, isArr = Array.isArray
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
 		, mapEntries = (obj, fn, separator) => obj && Object.entries(obj).map(fn).join(separator)
@@ -30,11 +31,18 @@
 		, xf = [
 			{ fontId: 0, applyFont: 1 },
 			{ numFmtId: 164, applyNumberFormat: 1 },
+			{ numFmtId: 165, applyNumberFormat: 1 },
 			{ numFmtId: 0, fontId: 1, applyFont: 1 },
 		]
+		, getXf = val => {
+			var style = val.style
+			, format = val.format
+			, attr = style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
+			return attr ? '" s="' + attr : ''
+		}
 		, files = workbook.sheets.filter(s => s).map(
 			(sheet, i, name) => {
-				sheet = Array.isArray(sheet)? { data: sheet } : sheet
+				sheet = isArr(sheet)? { data: sheet } : sheet
 				i++
 				name = 'worksheets/sheet' + i + '.xml'
 				types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
@@ -54,7 +62,7 @@
 						'<sheetData>' + sheet.data.map(
 							row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
 								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
-									isObj(val) ? (tmp = val.style === 'bold' ? '" s="2' : '', val = val.value, tmp) : ''
+									isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : ''
 								) + (
 									val && isStr(val) ? (
 										val[0] === '=' ? '"><f>' + val.slice(1) + '</f>' :
@@ -62,7 +70,7 @@
 									) :
 									typeof val === 'number' ? '"><v>' + val + '</v>' :
 									typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
-									val instanceof Date ? '" s="1"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
+									val instanceof Date ? (isArr(tmp) ? '" s="2' : '') +'"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 									'">'
 								) + '</c>' : ''
 							).join('') + '</row>' : ''
