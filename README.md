@@ -22,6 +22,11 @@ Examples
 ```javascript
 const { createXlsx } = require("@litejs/xlsx");
 const fileAsUint8Array = await createXlsx({
+    styles: {
+        My1: {
+            font: { sz: 15, name: "Calibri" },
+        },
+    },
     sheets: [
         {
             name: 'Products',
@@ -42,6 +47,13 @@ const fileAsUint8Array = await createXlsx({
                 ['Default Date', new Date(1514900750001)],
                 ['Datetime', { format: 'datetime', value: new Date(1514900750001) }],
                 ['Date', { format: 'date', value: new Date(1514900750001) }],
+            ]
+        },
+        {
+            name: 'Styles',
+            data: [
+                [{ style: 'My1', value: 'Cell with custom stype'}, 1],
+                { height: 25, data: ['Row with custom height', 2] },
             ]
         },
     ]

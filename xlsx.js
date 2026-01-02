@@ -1,7 +1,8 @@
 
 
 ;((exports, Object) => {
-	var createZip = exports.createZip || require('@litejs/zip').createZip
+	var UNDEF
+	, createZip = exports.createZip || require('@litejs/zip').createZip
 	, createFiles = workbook => {
 		var xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
 		, nsPackage = 'http://schemas.openxmlformats.org/package/2006/'
@@ -20,6 +21,7 @@
 		, sheets = ''
 		, assign = Object.assign
 		, isArr = Array.isArray
+		, dataArr = arr => isArr(arr) ? { data: arr } : arr
 		, isNum = num => num === num && typeof num === 'number'
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
@@ -58,7 +60,7 @@
 		, files = workbook.sheets.filter(isTruthy).map(
 			(sheet, i) => {
 				i++
-				sheet = isArr(sheet) ? { data: sheet } : sheet
+				sheet = dataArr(sheet)
 				var cols = sheet.cols
 				, rowIndex = 0
 				, name = 'worksheets/sheet' + i + '.xml'
@@ -76,9 +78,11 @@
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
 						'<sheetData>' + sheet.data.map(
-							row => row ? toXml('row', {
+							row => (row = dataArr(row)) ? toXml('row', {
 								r: ++rowIndex,
-							}, row.map(
+								ht: row.height,
+								customHeight: row.height ? 1 : UNDEF,
+							}, row.data.map(
 								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
 									isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : ''
 								) + (
