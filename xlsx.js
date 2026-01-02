@@ -24,7 +24,7 @@
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
 		, isTruthy = s => s
-		, mapEntries = (obj, fn, separator) => obj && Object.entries(obj).map(fn).join(separator)
+		, mapEntries = (obj, fn, separator) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(separator)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 		, toVal = b => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { val: arr[1] }], accum), {})
 		, toXml = (name, attrs, childs, wrapVal) => (
@@ -76,7 +76,9 @@
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
 						'<sheetData>' + sheet.data.map(
-							row => row ? '<row r="' + (++rowIndex) + '">' + row.map(
+							row => row ? toXml('row', {
+								r: ++rowIndex,
+							}, row.map(
 								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
 									isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : ''
 								) + (
@@ -89,7 +91,7 @@
 									val instanceof Date ? (isArr(tmp) ? '" s="2' : '') +'"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 									'">'
 								) + '</c>' : ''
-							).join('') + '</row>' : ''
+							).join('')) : ''
 						).join('') + '</sheetData></worksheet>'
 				}
 			}
