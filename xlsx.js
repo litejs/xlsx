@@ -80,6 +80,7 @@
 						'<sheetData>' + sheet.data.map(
 							row => (row = dataArr(row)) ? toXml('row', {
 								r: ++rowIndex,
+								hidden: row.hidden ? 1 : UNDEF,
 								ht: row.height,
 								customHeight: row.height ? 1 : UNDEF,
 							}, row.data.map(

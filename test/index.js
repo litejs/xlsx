@@ -66,6 +66,7 @@ describe("xlsx", function() {
 					name: 'Styles',
 					data: [
 						[{style: 'My1', value: 'Apple My1'}, { style: "Plain", value: "Banana Plain" }],
+						{ hidden: true, data: ['Hidden Row', 1] },
 						{ height: 25, data: ['Sized Row', 1] },
 					]
 				},
