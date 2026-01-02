@@ -82,6 +82,10 @@
 				sheet = dataArr(sheet)
 				var cols = sheet.cols
 				, rowIndex = 0
+				, freeze = sheet.freeze
+				, freezeRows = freeze && freeze.rows
+				, freezeCols = freeze && freeze.cols
+				, freezePane = freeze && (freezeRows ? 'bottom' : 'top') + (freezeCols ? 'Right' : 'Left')
 				, name = 'worksheets/sheet' + i + '.xml'
 
 				types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
@@ -92,6 +96,16 @@
 					name: 'xl/' + name,
 					content: xmlHead +
 						'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+						(freeze ?
+						'<sheetViews>' + toXml('sheetView', { workbookViewId: 0 }, {
+							pane: [{
+								xSplit: freezeCols || UNDEF,
+								ySplit: freezeRows || UNDEF,
+								topLeftCell: toCol(freezeCols) + (freezeRows + 1),
+								activePane: freezePane,
+								state: 'frozen'
+							}],
+							selection: [{ pane: freezePane }]}) + '</sheetViews>' : '') +
 						(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length - 1) + sheet.data.length + '"/>' : '') +
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
@@ -162,5 +176,4 @@
 
 // this is `exports` in module and `window` in browser
 })(this, Object) // jshint ignore:line
-
 

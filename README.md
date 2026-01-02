@@ -31,6 +31,7 @@ const fileAsUint8Array = await createXlsx({
     sheets: [
         {
             name: 'Products',
+            freeze: { rows: 1, cols: 0 },
             cols: '20,10,10', // Simple column widths
             data: [
                 ['Apple', 1.99, 10],
@@ -72,5 +73,4 @@ run tests `npm install; npm test`.
 [GitHub repo](https://github.com/litejs/xlsx) |
 [npm package](https://npmjs.org/package/@litejs/xlsx) |
 [Buy Me A Tea][6]
-
 

@@ -29,6 +29,7 @@ describe("xlsx", function() {
 				{
 					name: 'Types',
 					cols: '20,40',
+					freeze: { rows: 1, cols: 0 },
 					data: [
 						['null', null],
 						['true', true],
@@ -76,6 +77,7 @@ describe("xlsx", function() {
 				{
 					cols: [{ width: null }],
 					name: 'Styles',
+					freeze: { rows: 0, cols: 1 },
 					data: [
 						[{style: 'My1', value: 'Apple My1'}, { style: "Plain", value: "Banana Plain" }],
 						{ hidden: true, data: ['Hidden Row', 1] },
