@@ -68,7 +68,7 @@ Follow [Coding Style Guide](https://github.com/litejs/litejs/wiki/Style-Guide),
 run tests `npm install; npm test`.
 
 
-> Copyright (c) 2025 Lauri Rooden &lt;lauri@rooden.ee&gt;  
+> Copyright (c) 2025-2026 Lauri Rooden &lt;lauri@rooden.ee&gt;  
 [MIT License](https://litejs.com/MIT-LICENSE.txt) |
 [GitHub repo](https://github.com/litejs/xlsx) |
 [npm package](https://npmjs.org/package/@litejs/xlsx) |
