@@ -59,6 +59,12 @@ describe("xlsx", function() {
 					font: { sz: 15, name: "Calibri" },
 				},
 				Plain: {},
+				Border1: {
+					border: 'thin',
+				},
+				Border2: {
+					border: { top: 'double' },
+				}
 			},
 			sheets: [
 				{
@@ -67,7 +73,7 @@ describe("xlsx", function() {
 					data: [
 						[{style: 'My1', value: 'Apple My1'}, { style: "Plain", value: "Banana Plain" }],
 						{ hidden: true, data: ['Hidden Row', 1] },
-						{ height: 25, data: ['Sized Row', 1] },
+						{ height: 25, data: ['Sized Row', { style: 'Border1', value: 1 }] },
 					]
 				},
 			]

@@ -28,10 +28,10 @@
 		, isTruthy = s => s
 		, mapEntries = (obj, fn, separator) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(separator)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
-		, toVal = b => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { val: arr[1] }], accum), {})
+		, toVal = (b, key) => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { [key]: arr[1] }], accum), {})
 		, toXml = (name, attrs, childs, wrapVal) => (
 			attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + a[1] + '"' : '', ' '),
-			childs = mapEntries(childs, a => a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b)) : b => toXml(a[0], b)).join(''), ''),
+			childs = mapEntries(childs, a => a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b, wrapVal)) : b => toXml(a[0], b)).join(''), ''),
 			'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 		)
 		, numFmt = [
@@ -42,15 +42,25 @@
 			{ sz: 11, name: 'Calibri' },
 			{ sz: 11, name: 'Calibri', b: true },
 		]
+		, border = [
+			{}
+		]
 		, xf = [
 			{ fontId: 0, applyFont: 1 },
 			{ numFmtId: 164, applyNumberFormat: 1 },
 			{ numFmtId: 165, applyNumberFormat: 1 },
 			{ numFmtId: 0, fontId: 1, applyFont: 1 },
 		]
-		, styles = Object.fromEntries(Object.entries(workbook.styles||{}).map(a => (a[1] = xf.push({
-			fontId: a[1].font ? font.push(a[1].font) - 1 : 0
-		}) - 1, a)))
+		, styles = Object.fromEntries(Object.entries(workbook.styles||{}).map(a => {
+			var newBorder = a[1].border
+			if (isStr(newBorder)) newBorder = { left: newBorder, right: newBorder, top: newBorder, bottom: newBorder }
+			a[1] = xf.push({
+				fontId: a[1].font ? font.push(a[1].font) - 1 : 0,
+				borderId: newBorder ? border.push(newBorder) - 1 : UNDEF,
+				applyBorder: newBorder ? 1 : UNDEF,
+			}) - 1
+			return a
+		}))
 		, getXf = val => {
 			var style = val.style
 			, format = val.format
@@ -118,8 +128,9 @@
 				name: 'xl/styles.xml',
 				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
 				toXml('numFmts', { count: numFmt.length }, { numFmt }) +
-				toXml('fonts', { count: font.length }, { font }, 1) +
-				'<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders>' +
+				toXml('fonts', { count: font.length }, { font }, 'val') +
+				'<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' +
+				toXml('borders', { count: border.length }, { border }, 'style') +
 				toXml('cellXfs', { count: xf.length }, { xf }) +
 				'</styleSheet>'
 			},
