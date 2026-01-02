@@ -64,6 +64,12 @@ describe("xlsx", function() {
 				},
 				Border2: {
 					border: { top: 'double' },
+				},
+				Fill1: {
+					fill: 'FFFF00',
+				},
+				Fill2: {
+					fill: { bgColor: 'FF9900', pattern: 'solid' },
 				}
 			},
 			sheets: [
@@ -74,6 +80,7 @@ describe("xlsx", function() {
 						[{style: 'My1', value: 'Apple My1'}, { style: "Plain", value: "Banana Plain" }],
 						{ hidden: true, data: ['Hidden Row', 1] },
 						{ height: 25, data: ['Sized Row', { style: 'Border1', value: 1 }] },
+						[{ style: 'Fill1', value: 'Filled' }, { style: 'Fill2', value: 2 }],
 					]
 				},
 			]
@@ -86,4 +93,3 @@ describe("xlsx", function() {
 		})
 	})
 })
-

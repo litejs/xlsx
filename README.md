@@ -25,6 +25,7 @@ const fileAsUint8Array = await createXlsx({
     styles: {
         My1: {
             font: { sz: 15, name: "Calibri" },
+            fill: "FFFF00",
         },
     },
     sheets: [
