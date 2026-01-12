@@ -55,7 +55,7 @@
 			{ numFmtId: 165, applyNumberFormat: 1 },
 			{ numFmtId: 0, fontId: 1, applyFont: 1 },
 		]
-		, styles = Object.fromEntries(Object.entries(workbook.styles||{}).map(a => {
+		, styles = Object.entries(workbook.styles||{}).reduce((accum, a) => {
 			var newBorder = a[1].border
 			, newFill = a[1].fill
 			if (isStr(newBorder)) newBorder = { left: newBorder, right: newBorder, top: newBorder, bottom: newBorder }
@@ -68,8 +68,9 @@
 				fillId: newFill ? fill.push(newFill) - 1 : UNDEF,
 				applyFill: newFill ? 1 : UNDEF,
 			}) - 1
-			return a
-		}))
+			accum[a[0]] = a[1]
+			return accum
+		}, {})
 		, getXf = val => {
 			var style = val.style
 			, format = val.format
