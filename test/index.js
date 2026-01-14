@@ -2,8 +2,9 @@
 describe("xlsx", function() {
 	require("@litejs/cli/snapshot.js")
 	var { createFiles, createXlsx } = require("..")
+	, compressionSuported = typeof CompressionStream !== "undefined" && typeof Response !== "undefined"
 
-	test("Readme", typeof CompressionStream !== "undefined" && typeof Response !== "undefined" && function(assert, mock) {
+	test("Readme", function(assert, mock) {
 		mock.swap(Date, "now", mock.fn(1514900750001))
 		var workbook = {
 			sheets: [
@@ -46,13 +47,14 @@ describe("xlsx", function() {
 			]
 		}
 		assert.matchSnapshot("test/snap/readme.json", JSON.stringify(createFiles(workbook), null, 2))
+		if (!compressionSuported) return assert.end()
 		createXlsx(workbook)
 		.then(uint8 => {
 			assert.matchSnapshot("test/snap/readme.xlsx", uint8)
 			assert.end()
 		})
 	})
-	test("styles", typeof CompressionStream !== "undefined" && typeof Response !== "undefined" && function(assert, mock) {
+	test("styles", function(assert, mock) {
 		mock.swap(Date, "now", mock.fn(1514900750001))
 		var workbook = {
 			styles: {
@@ -88,6 +90,7 @@ describe("xlsx", function() {
 			]
 		}
 		assert.matchSnapshot("test/snap/styles.json", JSON.stringify(createFiles(workbook), null, 2))
+		if (!compressionSuported) return assert.end()
 		createXlsx(workbook)
 		.then(uint8 => {
 			assert.matchSnapshot("test/snap/styles.xlsx", uint8)
