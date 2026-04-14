@@ -75,7 +75,7 @@
 		, getXf = val => {
 			var style = val.style
 			, format = val.format
-			, attr = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
+			, attr = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' || (val.value instanceof Date) ? 2 : 0
 			return attr ? '" s="' + attr : ''
 		}
 		, files = workbook.sheets.filter(isTruthy).map(

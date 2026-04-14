@@ -113,6 +113,14 @@ describe("xlsx", function() {
 		assert.ok(sheet.indexOf('<f>IF(A1&lt;5,&quot;yes&quot;,&quot;no&quot;)</f>') > -1, 'formula escaped')
 		assert.end()
 	})
+	test("wrapped Date without format gets datetime style", function(assert) {
+		var files = createFiles({
+			sheets: [{ data: [[{ value: new Date(1514900750001) }]] }]
+		})
+		var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
+		assert.ok(sheet.indexOf(' s="2"') > -1, 'datetime style applied')
+		assert.end()
+	})
 	test("null rows preserve row positions", function(assert) {
 		var files = createFiles({
 			sheets: [{ data: [['A'], null, ['C']] }]
