@@ -97,4 +97,20 @@ describe("xlsx", function() {
 			assert.end()
 		})
 	})
+	test("xml special chars escaping", function(assert) {
+		var files = createFiles({
+			sheets: [
+				{ name: 'SV11 & SV12', data: [] },
+				{ name: 'A < B', data: [] },
+				{ name: 'A "B"', data: [['=IF(A1<5,"yes","no")']] },
+			]
+		})
+		var workbook = files.find(function(f) { return f.name === 'xl/workbook.xml' }).content
+		var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet3.xml' }).content
+		assert.ok(workbook.indexOf('name="SV11 &amp; SV12"') > -1, 'ampersand escaped')
+		assert.ok(workbook.indexOf('name="A &lt; B"') > -1, 'less-than escaped')
+		assert.ok(workbook.indexOf('name="A &quot;B&quot;"') > -1, 'double-quote escaped')
+		assert.ok(sheet.indexOf('<f>IF(A1&lt;5,&quot;yes&quot;,&quot;no&quot;)</f>') > -1, 'formula escaped')
+		assert.end()
+	})
 })
