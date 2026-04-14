@@ -114,8 +114,8 @@
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
 						'<sheetData>' + sheet.data.map(
-							row => (row = dataArr(row)) ? toXml('row', {
-								r: ++rowIndex,
+							row => (++rowIndex, row = dataArr(row)) ? toXml('row', {
+								r: rowIndex,
 								hidden: row.hidden ? 1 : UNDEF,
 								ht: row.height,
 								customHeight: row.height ? 1 : UNDEF,
