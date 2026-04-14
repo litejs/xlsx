@@ -11,7 +11,10 @@
     "litejs"
   ],
   "main": "xlsx.js",
-  "files": [],
+  "types": "types/index.d.ts",
+  "files": [
+    "types"
+  ],
   "repository": "github:litejs/xlsx",
   "scripts": {
     "lint": "npx jshint -c .github/jshint.json *.js",
