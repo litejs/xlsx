@@ -75,7 +75,7 @@
 		, getXf = val => {
 			var style = val.style
 			, format = val.format
-			, attr = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' || (val.value instanceof Date) ? 2 : 0
+			, attr = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
 			return attr ? '" s="' + attr : ''
 		}
 		, files = workbook.sheets.filter(isTruthy).map(
@@ -121,7 +121,7 @@
 								customHeight: row.height ? 1 : UNDEF,
 							}, row.data.map(
 								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
-									isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : ''
+									isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : (tmp = '')
 								) + (
 									val && isStr(val) ? (
 										val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :
@@ -129,7 +129,7 @@
 									) :
 									isNum(val) ? '"><v>' + val + '</v>' :
 									typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
-									val instanceof Date ? (isArr(tmp) ? '" s="2' : '') +'"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
+									val instanceof Date ? (tmp ? '' : '" s="2') + '"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 									'">'
 								) + '</c>' : ''
 							).join('')) : ''
