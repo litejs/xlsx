@@ -113,4 +113,12 @@ describe("xlsx", function() {
 		assert.ok(sheet.indexOf('<f>IF(A1&lt;5,&quot;yes&quot;,&quot;no&quot;)</f>') > -1, 'formula escaped')
 		assert.end()
 	})
+	test("dimension ref correct when first row is object", function(assert) {
+		var files = createFiles({
+			sheets: [{ data: [{ hidden: true, data: ['a', 'b'] }, ['c', 'd']] }]
+		})
+		var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
+		assert.ok(sheet.indexOf('ref="A1:B2"') > -1, 'dimension uses column count from row data')
+		assert.end()
+	})
 })

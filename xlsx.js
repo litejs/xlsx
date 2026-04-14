@@ -83,6 +83,7 @@
 				i++
 				sheet = dataArr(sheet)
 				var cols = sheet.cols
+				, firstRow = dataArr(sheet.data.find(isTruthy))
 				, rowIndex = 0
 				, freeze = sheet.freeze
 				, freezeRows = freeze && freeze.rows
@@ -108,7 +109,7 @@
 								state: 'frozen'
 							}],
 							selection: [{ pane: freezePane }]}) + '</sheetViews>' : '') +
-						(sheet.data[0] ? '<dimension ref="A1:' + toCol(sheet.data[0].length - 1) + sheet.data.length + '"/>' : '') +
+						(firstRow ? '<dimension ref="A1:' + toCol(firstRow.data.length - 1) + sheet.data.length + '"/>' : '') +
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
