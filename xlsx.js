@@ -8,7 +8,7 @@
 		, nsPackage = 'http://schemas.openxmlformats.org/package/2006/'
 		, nsRels = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
 		// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
-		, excelEpoch = new Date(1899, 11, 30)
+		, excelEpoch = Date.UTC(1899, 11, 30)
 		, types = [
 			{ PartName: '/xl/styles.xml', ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml' },
 			{ PartName: '/xl/workbook.xml', ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml' }
