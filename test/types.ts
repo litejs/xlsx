@@ -25,17 +25,17 @@ var workbook: Workbook = {
 }
 
 var files: XlsxFile[] = createFiles(workbook)
-var fileName: string = files[0].name
-var content: string = files[0].content
+files[0].name satisfies string
+files[0].content satisfies string
 
 // Promise form
-var p: Promise<Uint8Array> = createXlsx(workbook)
-var p2: Promise<Uint8Array> = createXlsx(workbook, { comment: "test" })
+createXlsx(workbook) satisfies Promise<Uint8Array>
+createXlsx(workbook, { comment: "test" }) satisfies Promise<Uint8Array>
 
 // Callback form
 createXlsx(workbook, (err, data) => {
-	var b: Uint8Array = data
+	data satisfies Uint8Array
 })
 createXlsx(workbook, {}, (err, data) => {
-	var b: Uint8Array = data
+	data satisfies Uint8Array
 })
