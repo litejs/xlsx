@@ -193,6 +193,48 @@ describe("xlsx", function() {
 		assert.equal(sides({ bottom: 'thin', top: null }), ['<top', '<bottom'], 'sides with no style keep their position')
 		assert.end()
 	})
+	test("fill colors are 8 digit ARGB", function(assert) {
+		function fills(def) {
+			return /<fills[^>]*>([\s\S]*?)<\/fills>/.exec(createFiles({
+				styles: { F: { fill: def } },
+				sheets: [{ data: [[{ style: 'F', value: 1 }]] }]
+			}).find(function(f) { return f.name === 'xl/styles.xml' }).content)[1]
+		}
+		assert.ok(fills('FFFF00').indexOf('<fgColor rgb="FFFFFF00"/>') > -1, 'six digits gain an FF alpha')
+		assert.ok(fills('#ffff00').indexOf('<fgColor rgb="FFFFFF00"/>') > -1, 'leading hash dropped, case raised')
+		assert.ok(fills('FFFFFF00').indexOf('<fgColor rgb="FFFFFF00"/>') > -1, 'eight digits pass through')
+		assert.ok(fills({ bgColor: 'ff9900' }).indexOf('<bgColor rgb="FFFF9900"/>') > -1, 'bgColor normalized too')
+		var caller = { fgColor: 'FFFF00' }
+		createFiles({ styles: { F: { fill: caller } }, sheets: [{ data: [[1]] }] })
+		assert.equal(caller, { fgColor: 'FFFF00' }, 'caller style object left untouched')
+		assert.end()
+	})
+	test("custom fonts keep a size and family", function(assert) {
+		function fonts(def) {
+			return /<fonts[^>]*>([\s\S]*?)<\/fonts>/.exec(createFiles({
+				styles: { F: { font: def } },
+				sheets: [{ data: [[{ style: 'F', value: 1 }]] }]
+			}).find(function(f) { return f.name === 'xl/styles.xml' }).content)[1]
+			.match(/<font>[\s\S]*?<\/font>/g).pop()
+		}
+		assert.equal(fonts({ b: true }), '<font><b/><sz val="11"/><name val="Calibri"/></font>', 'defaults fill in around a bare bold')
+		assert.equal(fonts({ sz: 15, name: 'Arial' }), '<font><sz val="15"/><name val="Arial"/></font>', 'caller values win')
+		// CT_Font is a sequence, b/i/u come before sz and name
+		assert.equal(fonts({ name: 'Arial', u: true, sz: 14, i: true }), '<font><i/><u/><sz val="14"/><name val="Arial"/></font>', 'children reordered to schema order')
+		var caller = { b: true }
+		createFiles({ styles: { F: { font: caller } }, sheets: [{ data: [[1]] }] })
+		assert.equal(caller, { b: true }, 'caller font object left untouched')
+		assert.end()
+	})
+	test("styleSheet carries the named style tables", function(assert) {
+		var styles = createFiles({ sheets: [{ data: [[1]] }] })
+		.find(function(f) { return f.name === 'xl/styles.xml' }).content
+		assert.ok(styles.indexOf('<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>') > -1, 'cellStyleXfs present')
+		assert.ok(styles.indexOf('<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>') > -1, 'cellStyles present')
+		assert.ok(styles.indexOf('<cellStyleXfs') < styles.indexOf('<cellXfs'), 'cellStyleXfs sits before cellXfs')
+		assert.ok(styles.indexOf('<cellXfs') < styles.indexOf('<cellStyles'), 'cellStyles sits after cellXfs')
+		assert.end()
+	})
 	test("null rows preserve row positions", function(assert) {
 		var files = createFiles({
 			sheets: [{ data: [['A'], null, ['C']] }]

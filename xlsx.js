@@ -30,6 +30,9 @@
 			childOrder ? childOrder.map(k => [k, obj[k]]) : Object.entries(obj)
 		).map(fn).filter(isTruthy).join(sep)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
+		, defaultFont = { sz: 11, name: 'Calibri' }
+		, fontOrder = ['b', 'i', 'strike', 'condense', 'extend', 'outline', 'shadow', 'u', 'vertAlign', 'sz', 'color', 'name', 'family', 'charset', 'scheme']
+		, normalizeRgb = rgb => isStr(rgb) ? (rgb = rgb.replace(/^#/, '').toUpperCase(), rgb.length === 6 ? 'FF' + rgb : rgb) : rgb
 		, toVal = (b, key) => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { [key]: arr[1] }], accum), {})
 		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
 		, toXml = (name, attrs, childs, wrapVal, childOrder) => (
@@ -61,10 +64,14 @@
 		, styles = Object.entries(workbook.styles||{}).reduce((accum, a) => {
 			var newBorder = a[1].border
 			, newFill = a[1].fill
-			, newFont = a[1].font
+			, newFont = a[1].font && assign({}, defaultFont, a[1].font)
 			if (isStr(newBorder)) newBorder = { left: newBorder, right: newBorder, top: newBorder, bottom: newBorder }
 			if (isStr(newFill)) newFill = { fgColor: newFill }
-			if (newFill) newFill.pattern = newFill.pattern || 'solid'
+			if (newFill) newFill = {
+				pattern: newFill.pattern || 'solid',
+				fgColor: normalizeRgb(newFill.fgColor),
+				bgColor: normalizeRgb(newFill.bgColor)
+			}
 			a[1] = xf.push({
 				fontId: newFont ? font.push(newFont) - 1 : 0,
 				applyFont: newFont ? 1 : UNDEF,
@@ -167,7 +174,7 @@
 				name: 'xl/styles.xml',
 				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
 				toXml('numFmts', { count: numFmt.length }, { numFmt }) +
-				toXml('fonts', { count: font.length }, { font }, 'val') +
+				toXml('fonts', { count: font.length }, { font }, 'val', fontOrder) +
 				toXml('fills', { count: fill.length }, fill.map(
 					f => '<fill>' + toXml('patternFill', { patternType: f.pattern }, {
 						fgColor: f.fgColor ? [{ rgb: f.fgColor }] : UNDEF,
@@ -175,7 +182,9 @@
 					}) + '</fill>'
 				).join('')) +
 				toXml('borders', { count: border.length }, { border }, 'style', ['left', 'right', 'top', 'bottom', 'diagonal']) +
+				'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
 				toXml('cellXfs', { count: xf.length }, { xf }) +
+				'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
 				'</styleSheet>'
 			},
 			{
