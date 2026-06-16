@@ -12,6 +12,7 @@ jobs:
     - run: node --import=@litejs/cli/test.js test/load.mjs
     - run: npx lj lint
     - run: npx tsc -p test/tsconfig.json --noEmit
+    - run: npm run validate-snaps
     - uses: coverallsapp/github-action@v2
       name: Upload to coveralls.io
       with:
