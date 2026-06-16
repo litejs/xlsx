@@ -120,9 +120,9 @@
 				, dimension = sheetBounds(sheet.data)
 				, rowIndex = 0
 				, freeze = sheet.freeze
-				, freezeRows = freeze && freeze.rows
-				, freezeCols = freeze && freeze.cols
-				, freezePane = freeze && (freezeRows ? 'bottom' : 'top') + (freezeCols ? 'Right' : 'Left')
+				, freezeRows = freeze && 'rows' in freeze ? freeze.rows : UNDEF
+				, freezeCols = freeze && 'cols' in freeze ? freeze.cols : UNDEF
+				, freezePane = freeze && (freezeRows > 0 ? 'bottom' : 'top') + (freezeCols > 0 ? 'Right' : 'Left')
 				, name = 'worksheets/sheet' + i + '.xml'
 
 				types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
@@ -133,17 +133,17 @@
 					name: 'xl/' + name,
 					content: xmlHead +
 						'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+						(dimension ? '<dimension ref="' + dimension + '"/>' : '') +
 						(freeze ?
 						'<sheetViews>' + toXml('sheetView', { workbookViewId: 0 }, {
 							pane: [{
-								xSplit: freezeCols || UNDEF,
-								ySplit: freezeRows || UNDEF,
-								topLeftCell: toCol(freezeCols) + (freezeRows + 1),
+								xSplit: freezeCols > 0 ? freezeCols : UNDEF,
+								ySplit: freezeRows > 0 ? freezeRows : UNDEF,
+								topLeftCell: toCol(freezeCols > 0 ? freezeCols : 0) + ((freezeRows > 0 ? freezeRows : 0) + 1),
 								activePane: freezePane,
 								state: 'frozen'
 							}],
 							selection: [{ pane: freezePane }]}) + '</sheetViews>' : '') +
-						(dimension ? '<dimension ref="' + dimension + '"/>' : '') +
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
@@ -214,5 +214,4 @@
 	exports.createXlsx = (workbook, opts, next) => createZip(createFiles(workbook), opts, next)
 
 // this is `exports` in module and `window` in browser
-})(this, Object) // jshint ignore:line
-
+})(typeof module !== 'undefined' && module.exports ? module.exports : typeof exports !== 'undefined' ? exports : this, Object) // jshint ignore:line
