@@ -18,7 +18,8 @@
   "repository": "github:litejs/xlsx",
   "scripts": {
     "lint": "npx jshint -c .github/jshint.json *.js",
-    "test": "lj t --tz=UTC test/index.js"
+    "test": "lj t --tz=UTC test/index.js",
+    "validate-snaps": "node test/validate-snaps.js"
   },
   "devDependencies": {
     "@litejs/cli": "26.4.0"
