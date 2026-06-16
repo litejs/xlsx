@@ -152,4 +152,19 @@ describe("xlsx", function() {
 		assert.ok(sheet.indexOf('ref="A1:N5"') > -1, 'dimension covers all used columns')
 		assert.end()
 	})
+	test("styles.xml is Excel-compatible", function(assert) {
+		var styles = createFiles({
+			styles: {
+				Bold: { font: { b: true } },
+				Header: { font: { b: true }, fill: 'E8E8E8' },
+			},
+			sheets: [{ data: [[{ style: 'Bold', value: 'Title' }]] }]
+		}).find(function(f) { return f.name === 'xl/styles.xml' }).content
+		assert.ok(styles.indexOf('<cellStyleXfs') > -1, 'cellStyleXfs present')
+		assert.ok(styles.indexOf('<cellStyles') > -1, 'cellStyles present')
+		assert.ok(styles.indexOf('<b val="1"/>') > -1, 'bold fonts use val attribute')
+		assert.ok(styles.indexOf('<font><b/></font>') === -1, 'fonts include defaults')
+		assert.ok(styles.indexOf('rgb="FFE8E8E8"') > -1, 'fill colors use ARGB')
+		assert.end()
+	})
 })
