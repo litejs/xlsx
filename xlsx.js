@@ -28,6 +28,21 @@
 		, isTruthy = s => s
 		, mapEntries = (obj, fn, separator) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(separator)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
+		, sheetBounds = data => {
+			var maxCol = 0
+			, maxRow = 0
+			, rowIndex = 0
+			data.forEach(row => {
+				++rowIndex
+				maxRow = rowIndex
+				row = dataArr(row)
+				if (!row || !row.data) return
+				row.data.forEach((val, col) => {
+					if (val != null) maxCol = Math.max(maxCol, col + 1)
+				})
+			})
+			return maxCol > 0 && maxRow > 0 ? 'A1:' + toCol(maxCol - 1) + maxRow : ''
+		}
 		, toVal = (b, key) => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { [key]: arr[1] }], accum), {})
 		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
 		, toXml = (name, attrs, childs, wrapVal) => (
@@ -83,7 +98,7 @@
 				i++
 				sheet = dataArr(sheet)
 				var cols = sheet.cols
-				, firstRow = dataArr(sheet.data.find(isTruthy))
+				, dimension = sheetBounds(sheet.data)
 				, rowIndex = 0
 				, freeze = sheet.freeze
 				, freezeRows = freeze && freeze.rows
@@ -109,7 +124,7 @@
 								state: 'frozen'
 							}],
 							selection: [{ pane: freezePane }]}) + '</sheetViews>' : '') +
-						(firstRow ? '<dimension ref="A1:' + toCol(firstRow.data.length - 1) + sheet.data.length + '"/>' : '') +
+						(dimension ? '<dimension ref="' + dimension + '"/>' : '') +
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +

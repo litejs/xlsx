@@ -137,4 +137,19 @@ describe("xlsx", function() {
 		assert.ok(sheet.indexOf('ref="A1:B2"') > -1, 'dimension uses column count from row data')
 		assert.end()
 	})
+	test("dimension spans the widest row", function(assert) {
+		var sheet = createFiles({
+			sheets: [{
+				data: [
+					['Report', 'Q1'],
+					['Year', 2026, 'Status', 'Draft'],
+					[],
+					['A','B','C','D','E','F','G','H','I','J','K','L','M','N'],
+					[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+				]
+			}]
+		}).find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
+		assert.ok(sheet.indexOf('ref="A1:N5"') > -1, 'dimension covers all used columns')
+		assert.end()
+	})
 })
