@@ -18,7 +18,8 @@
   "repository": "github:litejs/xlsx",
   "scripts": {
     "lint": "npx jshint -c .github/jshint.json *.js",
-    "test": "lj t --tz=UTC test/index.js"
+    "test": "lj t --tz=UTC test/index.js",
+    "test:up": "npm t -- --up"
   },
   "devDependencies": {
     "@litejs/cli": "26.6.0"

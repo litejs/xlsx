@@ -29,7 +29,7 @@
 		, mapEntries = (obj, fn, separator) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(separator)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 		, toVal = (b, key) => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { [key]: arr[1] }], accum), {})
-		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
 		, toXml = (name, attrs, childs, wrapVal) => (
 			attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + esc(a[1]) + '"' : '', ' '),
 			childs = mapEntries(childs, a => a[1] && a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b, wrapVal)) : b => toXml(a[0], b)).join(''), ''),
@@ -102,7 +102,7 @@
 						) + (
 							val && isStr(val) ? (
 								val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :
-								'" t="inlineStr"><is><t>' + esc(val) + '</t></is>'
+								'" t="inlineStr"><is><t' + (/^\s|\s$/.test(val = esc(val)) ? ' xml:space="preserve"' : '') + '>' + val + '</t></is>'
 							) :
 							isNum(val) ? '"><v>' + val + '</v>' :
 							typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :

@@ -101,12 +101,16 @@ describe("xlsx", function() {
 			assert.end()
 		})
 	})
-	test("xml special chars escaping", function(assert) {
+	test("xml escaping and whitespace preservation", function(assert) {
 		var files = createFiles({
 			sheets: [
 				{ name: 'SV11 & SV12', data: [] },
 				{ name: 'A < B', data: [] },
-				{ name: 'A "B"', data: [['=IF(A1<5,"yes","no")']] },
+				{ name: 'A "B"', data: [
+					['=IF(A1<5,"yes","no")'],
+					['  padded  ', 'plain', '\ttabbed', 'has inner space'],
+					['cdata ]]> end', 'a > b']
+				] },
 			]
 		})
 		var workbook = files.find(function(f) { return f.name === 'xl/workbook.xml' }).content
@@ -115,6 +119,29 @@ describe("xlsx", function() {
 		assert.ok(workbook.indexOf('name="A &lt; B"') > -1, 'less-than escaped')
 		assert.ok(workbook.indexOf('name="A &quot;B&quot;"') > -1, 'double-quote escaped')
 		assert.ok(sheet.indexOf('<f>IF(A1&lt;5,&quot;yes&quot;,&quot;no&quot;)</f>') > -1, 'formula escaped')
+		assert.ok(sheet.indexOf('<t xml:space="preserve">  padded  </t>') > -1, 'surrounding spaces preserved')
+		assert.ok(sheet.indexOf('<t xml:space="preserve">\ttabbed</t>') > -1, 'leading tab preserved')
+		assert.ok(sheet.indexOf('<t>plain</t>') > -1, 'no xml:space when not needed')
+		assert.ok(sheet.indexOf('<t>has inner space</t>') > -1, 'inner space needs no xml:space')
+		assert.ok(sheet.indexOf('<t>cdata ]]&gt; end</t>') > -1, 'CDATA-close sequence escaped')
+		assert.ok(sheet.indexOf('<t>a &gt; b</t>') > -1, 'greater-than escaped')
+		assert.end()
+	})
+	test("strips XML-illegal control characters", function(assert) {
+		var files = createFiles({
+			sheets: [
+				{ name: 'Tab\u0007Bell', data: [
+					['a\u0000b\u0001c\u001Fd'],
+					['keep\ttab\nand newline']
+				] }
+			]
+		})
+		var workbook = files.find(function(f) { return f.name === 'xl/workbook.xml' }).content
+		var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
+		assert.ok(sheet.indexOf('<t>abcd</t>') > -1, 'control chars removed from cell text')
+		assert.ok(sheet.indexOf('<t>keep\ttab\nand newline</t>') > -1, 'tab and newline preserved')
+		assert.ok(workbook.indexOf('name="TabBell"') > -1, 'control chars removed from attributes')
+		assert.notOk(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(sheet + workbook), 'no illegal chars anywhere in output')
 		assert.end()
 	})
 	test("wrapped Date without format gets datetime style", function(assert) {
