@@ -83,13 +83,34 @@
 				i++
 				sheet = dataArr(sheet)
 				var cols = sheet.cols
-				, firstRow = dataArr(sheet.data.find(isTruthy))
+				, width = 0
 				, rowIndex = 0
 				, freeze = sheet.freeze
 				, freezeRows = freeze && freeze.rows || 0
 				, freezeCols = freeze && freeze.cols || 0
 				, freezePane = freeze && (freezeRows ? 'bottom' : 'top') + (freezeCols ? 'Right' : 'Left')
 				, name = 'worksheets/sheet' + i + '.xml'
+				, sheetData = sheet.data.map(
+					row => (++rowIndex, row = dataArr(row)) ? toXml('row', {
+						r: rowIndex,
+						hidden: row.hidden ? 1 : UNDEF,
+						ht: row.height,
+						customHeight: row.height ? 1 : UNDEF,
+					}, (row = row.data, row.length > width && (width = row.length), row).map(
+						(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
+							isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : (tmp = '')
+						) + (
+							val && isStr(val) ? (
+								val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :
+								'" t="inlineStr"><is><t>' + esc(val) + '</t></is>'
+							) :
+							isNum(val) ? '"><v>' + val + '</v>' :
+							typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
+							val instanceof Date ? (tmp ? '' : '" s="2') + '"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
+							'">'
+						) + '</c>' : ''
+					).join('')) : ''
+				).join('')
 
 				types.push({ PartName: '/xl/' + name, ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml' })
 				rels.push({ Id: 'rId' + i, Type: nsRels + 'worksheet', Target: name })
@@ -99,6 +120,7 @@
 					name: 'xl/' + name,
 					content: xmlHead +
 						'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+						(width ? '<dimension ref="A1:' + toCol(width - 1) + sheet.data.length + '"/>' : '') +
 						(freeze ?
 						'<sheetViews>' + toXml('sheetView', { workbookViewId: 0 }, {
 							pane: [{
@@ -109,31 +131,10 @@
 								state: 'frozen'
 							}],
 							selection: [{ pane: freezePane }]}) + '</sheetViews>' : '') +
-						(firstRow ? '<dimension ref="A1:' + toCol(firstRow.data.length - 1) + sheet.data.length + '"/>' : '') +
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
-						'<sheetData>' + sheet.data.map(
-							row => (++rowIndex, row = dataArr(row)) ? toXml('row', {
-								r: rowIndex,
-								hidden: row.hidden ? 1 : UNDEF,
-								ht: row.height,
-								customHeight: row.height ? 1 : UNDEF,
-							}, row.data.map(
-								(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
-									isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : (tmp = '')
-								) + (
-									val && isStr(val) ? (
-										val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :
-										'" t="inlineStr"><is><t>' + esc(val) + '</t></is>'
-									) :
-									isNum(val) ? '"><v>' + val + '</v>' :
-									typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
-									val instanceof Date ? (tmp ? '' : '" s="2') + '"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
-									'">'
-								) + '</c>' : ''
-							).join('')) : ''
-						).join('') + '</sheetData></worksheet>'
+						'<sheetData>' + sheetData + '</sheetData></worksheet>'
 				}
 			}
 		)

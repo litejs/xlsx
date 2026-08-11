@@ -133,6 +133,12 @@ describe("xlsx", function() {
 		assert.ok(sheet.indexOf('r="3"') > -1, 'third row has r=3')
 		assert.end()
 	})
+	test("dimension ref covers the widest row", function(assert) {
+		assert.ok(sheet1([[], ['a', 'b']]).indexOf('ref="A1:B2"') > -1, 'empty first row does not shrink the ref')
+		assert.ok(sheet1([['a'], ['a', 'b', 'c']]).indexOf('ref="A1:C2"') > -1, 'jagged rows use the widest row')
+		assert.ok(sheet1([[], []]).indexOf('<dimension') === -1, 'no cells means no dimension')
+		assert.end()
+	})
 	test("partial freeze defaults the missing axis", function(assert) {
 		assert.ok(sheet1([['a']], { freeze: { rows: 1 } }).indexOf('topLeftCell="A2"') > -1, 'missing cols freezes from column A')
 		assert.ok(sheet1([['a']], { freeze: { cols: 1 } }).indexOf('topLeftCell="B1"') > -1, 'missing rows freezes from row 1')
