@@ -59,11 +59,13 @@
 		, styles = Object.entries(workbook.styles||{}).reduce((accum, a) => {
 			var newBorder = a[1].border
 			, newFill = a[1].fill
+			, newFont = a[1].font
 			if (isStr(newBorder)) newBorder = { left: newBorder, right: newBorder, top: newBorder, bottom: newBorder }
 			if (isStr(newFill)) newFill = { fgColor: newFill }
 			if (newFill) newFill.pattern = newFill.pattern || 'solid'
 			a[1] = xf.push({
-				fontId: a[1].font ? font.push(a[1].font) - 1 : 0,
+				fontId: newFont ? font.push(newFont) - 1 : 0,
+				applyFont: newFont ? 1 : UNDEF,
 				borderId: newBorder ? border.push(newBorder) - 1 : UNDEF,
 				applyBorder: newBorder ? 1 : UNDEF,
 				fillId: newFill ? fill.push(newFill) - 1 : UNDEF,

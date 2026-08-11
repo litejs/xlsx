@@ -144,7 +144,7 @@ describe("xlsx", function() {
 		assert.notOk(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(sheet + workbook), 'no illegal chars anywhere in output')
 		assert.end()
 	})
-	test("Date cells keep a date number format", function(assert) {
+	test("cells resolve to a complete cellXfs entry", function(assert) {
 		var date = new Date(1514900750001)
 		// resolve the cellXfs entry that cell A1 actually points at
 		function cellXf(cell) {
@@ -158,11 +158,14 @@ describe("xlsx", function() {
 			return /<cellXfs[^>]*>([\s\S]*)<\/cellXfs>/.exec(styles)[1].match(/<xf[^>]*\/>/g)[+s]
 		}
 		var styled = cellXf({ style: 'My1', value: date })
+		var plain = cellXf({ style: 'My1', value: 'x' })
 		assert.ok(cellXf({ value: date }).indexOf('numFmtId="165"') > -1, 'wrapped Date gets datetime format')
 		assert.ok(cellXf(date).indexOf('numFmtId="165"') > -1, 'bare Date gets datetime format')
 		assert.ok(styled.indexOf('numFmtId="165"') > -1, 'styled Date keeps datetime format')
 		assert.ok(styled.indexOf('fontId="2"') > -1, 'styled Date keeps the custom font')
 		assert.ok(cellXf({ style: 'My1', format: 'date', value: date }).indexOf('numFmtId="164"') > -1, 'format applies alongside style')
+		assert.ok(plain.indexOf('applyFont="1"') > -1, 'custom font is flagged as applied')
+		assert.ok(styled.indexOf('applyFont="1"') > -1, 'merged xf keeps the applyFont flag')
 		assert.end()
 	})
 	test("non-finite numbers become error cells", function(assert) {
