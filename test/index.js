@@ -178,6 +178,21 @@ describe("xlsx", function() {
 		assert.ok(sheet.indexOf('<c r="E1"><v>1e+21</v></c>') > -1, 'large exponent stays numeric')
 		assert.end()
 	})
+	test("border sides follow schema order", function(assert) {
+		function sides(def) {
+			var styles = createFiles({
+				styles: { B: { border: def } },
+				sheets: [{ data: [[{ style: 'B', value: 1 }]] }]
+			}).find(function(f) { return f.name === 'xl/styles.xml' }).content
+			return /<borders[^>]*>([\s\S]*)<\/borders>/.exec(styles)[1]
+			.match(/<border>[\s\S]*?<\/border>|<border\/>/g)[1]
+			.match(/<(left|right|top|bottom|diagonal)\b/g)
+		}
+		assert.equal(sides({ bottom: 'thin', top: 'double', left: 'thin' }), ['<left', '<top', '<bottom'], 'object form reordered to left, top, bottom')
+		assert.equal(sides('thin'), ['<left', '<right', '<top', '<bottom'], 'string form stays ordered')
+		assert.equal(sides({ bottom: 'thin', top: null }), ['<top', '<bottom'], 'sides with no style keep their position')
+		assert.end()
+	})
 	test("null rows preserve row positions", function(assert) {
 		var files = createFiles({
 			sheets: [{ data: [['A'], null, ['C']] }]

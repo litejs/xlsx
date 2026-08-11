@@ -26,13 +26,15 @@
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
 		, isTruthy = s => s
-		, mapEntries = (obj, fn, separator) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(separator)
+		, mapEntries = (obj, fn, sep, childOrder) => !obj ? '' : isStr(obj) ? obj : (
+			childOrder ? childOrder.map(k => [k, obj[k]]) : Object.entries(obj)
+		).map(fn).filter(isTruthy).join(sep)
 		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
 		, toVal = (b, key) => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { [key]: arr[1] }], accum), {})
 		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
-		, toXml = (name, attrs, childs, wrapVal) => (
+		, toXml = (name, attrs, childs, wrapVal, childOrder) => (
 			attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + esc(a[1]) + '"' : '', ' '),
-			childs = mapEntries(childs, a => a[1] && a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b, wrapVal)) : b => toXml(a[0], b)).join(''), ''),
+			childs = mapEntries(childs, a => a[1] && a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b, wrapVal), 0, childOrder) : b => toXml(a[0], b)).join(''), '', wrapVal ? 0 : childOrder),
 			'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
 		)
 		, numFmt = [
@@ -172,7 +174,7 @@
 						bgColor: f.bgColor ? [{ rgb: f.bgColor }] : UNDEF,
 					}) + '</fill>'
 				).join('')) +
-				toXml('borders', { count: border.length }, { border }, 'style') +
+				toXml('borders', { count: border.length }, { border }, 'style', ['left', 'right', 'top', 'bottom', 'diagonal']) +
 				toXml('cellXfs', { count: xf.length }, { xf }) +
 				'</styleSheet>'
 			},
