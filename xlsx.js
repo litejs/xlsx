@@ -104,7 +104,7 @@
 								val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :
 								'" t="inlineStr"><is><t' + (/^\s|\s$/.test(val = esc(val)) ? ' xml:space="preserve"' : '') + '>' + val + '</t></is>'
 							) :
-							isNum(val) ? '"><v>' + val + '</v>' :
+							val !== val || isNum(val) ? (isFinite(val) ? '"><v>' + val + '</v>' : '" t="e"><v>#NUM!</v>') :
 							typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
 							val instanceof Date ? (tmp ? '' : '" s="2') + '"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
 							'">'
