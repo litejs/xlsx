@@ -4,6 +4,10 @@ describe("xlsx", function() {
 	var { createFiles, createXlsx } = require("..")
 	, compressionSuported = typeof CompressionStream !== "undefined" && typeof Response !== "undefined"
 
+	function sheet1(data, sheet) {
+		return createFiles({ sheets: [{ data, ...sheet }] }).find(f => f.name === 'xl/worksheets/sheet1.xml').content
+	}
+
 	test("Readme", function(assert, mock) {
 		mock.swap(Date, "now", mock.fn(1514900750001))
 		var workbook = {
@@ -127,6 +131,11 @@ describe("xlsx", function() {
 		})
 		var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
 		assert.ok(sheet.indexOf('r="3"') > -1, 'third row has r=3')
+		assert.end()
+	})
+	test("partial freeze defaults the missing axis", function(assert) {
+		assert.ok(sheet1([['a']], { freeze: { rows: 1 } }).indexOf('topLeftCell="A2"') > -1, 'missing cols freezes from column A')
+		assert.ok(sheet1([['a']], { freeze: { cols: 1 } }).indexOf('topLeftCell="B1"') > -1, 'missing rows freezes from row 1')
 		assert.end()
 	})
 	test("dimension ref correct when first row is object", function(assert) {

@@ -86,8 +86,8 @@
 				, firstRow = dataArr(sheet.data.find(isTruthy))
 				, rowIndex = 0
 				, freeze = sheet.freeze
-				, freezeRows = freeze && freeze.rows
-				, freezeCols = freeze && freeze.cols
+				, freezeRows = freeze && freeze.rows || 0
+				, freezeCols = freeze && freeze.cols || 0
 				, freezePane = freeze && (freezeRows ? 'bottom' : 'top') + (freezeCols ? 'Right' : 'Left')
 				, name = 'worksheets/sheet' + i + '.xml'
 
