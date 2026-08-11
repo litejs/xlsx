@@ -72,10 +72,18 @@
 			accum[a[0]] = a[1]
 			return accum
 		}, {})
-		, getXf = val => {
+		, xfCache = {}
+		, mergeXf = (styleId, fmtId) => xfCache[styleId + '.' + fmtId] ||
+			(xfCache[styleId + '.' + fmtId] = xf.push(assign({}, xf[styleId], {
+				numFmtId: xf[fmtId].numFmtId,
+				applyNumberFormat: 1
+			})) - 1)
+		, getXf = (val, isDate) => {
 			var style = val.style
 			, format = val.format
-			, attr = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : format === 'date' ? 1 : format === 'datetime' ? 2 : 0
+			, styleId = isNum(styles[style]) ? styles[style] : style === 'bold' ? 3 : 0
+			, fmtId = format === 'date' ? 1 : format === 'datetime' || isDate ? 2 : 0
+			, attr = fmtId && styleId ? mergeXf(styleId, fmtId) : fmtId || styleId
 			return attr ? '" s="' + attr : ''
 		}
 		, files = workbook.sheets.filter(isTruthy).map(
@@ -98,7 +106,7 @@
 						customHeight: row.height ? 1 : UNDEF,
 					}, (row = row.data, row.length > width && (width = row.length), row).map(
 						(val, col, tmp) => val != null ? '<c r="' + toCol(col) + rowIndex + (
-							isObj(val) ? (tmp = getXf(val), val = val.value, tmp) : (tmp = '')
+							isObj(val) ? (tmp = val, val = val.value, tmp = getXf(tmp, val instanceof Date)) : (tmp = '')
 						) + (
 							val && isStr(val) ? (
 								val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :

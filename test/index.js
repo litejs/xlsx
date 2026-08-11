@@ -144,12 +144,25 @@ describe("xlsx", function() {
 		assert.notOk(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(sheet + workbook), 'no illegal chars anywhere in output')
 		assert.end()
 	})
-	test("wrapped Date without format gets datetime style", function(assert) {
-		var files = createFiles({
-			sheets: [{ data: [[{ value: new Date(1514900750001) }]] }]
-		})
-		var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
-		assert.ok(sheet.indexOf(' s="2"') > -1, 'datetime style applied')
+	test("Date cells keep a date number format", function(assert) {
+		var date = new Date(1514900750001)
+		// resolve the cellXfs entry that cell A1 actually points at
+		function cellXf(cell) {
+			var files = createFiles({
+				styles: { My1: { font: { sz: 15, name: 'Calibri' } } },
+				sheets: [{ data: [[cell]] }]
+			})
+			var sheet = files.find(function(f) { return f.name === 'xl/worksheets/sheet1.xml' }).content
+			var styles = files.find(function(f) { return f.name === 'xl/styles.xml' }).content
+			var s = /<c r="A1"(?: s="(\d+)")?/.exec(sheet)[1] || '0'
+			return /<cellXfs[^>]*>([\s\S]*)<\/cellXfs>/.exec(styles)[1].match(/<xf[^>]*\/>/g)[+s]
+		}
+		var styled = cellXf({ style: 'My1', value: date })
+		assert.ok(cellXf({ value: date }).indexOf('numFmtId="165"') > -1, 'wrapped Date gets datetime format')
+		assert.ok(cellXf(date).indexOf('numFmtId="165"') > -1, 'bare Date gets datetime format')
+		assert.ok(styled.indexOf('numFmtId="165"') > -1, 'styled Date keeps datetime format')
+		assert.ok(styled.indexOf('fontId="2"') > -1, 'styled Date keeps the custom font')
+		assert.ok(cellXf({ style: 'My1', format: 'date', value: date }).indexOf('numFmtId="164"') > -1, 'format applies alongside style')
 		assert.end()
 	})
 	test("non-finite numbers become error cells", function(assert) {
