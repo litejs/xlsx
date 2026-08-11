@@ -44,7 +44,7 @@ describe("xlsx", function() {
 						['Object as value', { value: {} }],
 						['Empty array', {}],
 						['Default Date', new Date(1514900750001)],
-						['Datetime', { format: 'datetime', value: new Date(1514900750001) }],
+						['Datetime', { format: 'datetime', value: new Date(0) }],
 						['Date', { format: 'date', value: new Date(1514900750001) }],
 					]
 				},

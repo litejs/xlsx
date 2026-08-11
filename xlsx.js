@@ -118,7 +118,7 @@
 							) :
 							val !== val || isNum(val) ? (isFinite(val) ? '"><v>' + val + '</v>' : '" t="e"><v>#NUM!</v>') :
 							typeof val === 'boolean' ? '" t="b"><v>' + (val ? 1 : 0) + '</v>' :
-							val instanceof Date ? (tmp ? '' : '" s="2') + '"><v>' + ((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(6) + '</v>' :
+							val instanceof Date ? (tmp ? '' : '" s="2') + '"><v>' + (+((val - excelEpoch)/(24 * 60 * 60 * 1000)).toFixed(11)) + '</v>' :
 							'">'
 						) + '</c>' : ''
 					).join('')) : ''
