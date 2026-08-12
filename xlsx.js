@@ -3,13 +3,32 @@
 ;((exports, Object) => {
 	var UNDEF
 	, createZip = exports.createZip || require('@litejs/zip').createZip
+	, xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
+	, nsPackage = 'http://schemas.openxmlformats.org/package/2006/'
+	, nsRels = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
+	// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
+	, excelEpoch = Date.UTC(1899, 11, 30)
+	, assign = Object.assign
+	, dataArr = arr => Array.isArray(arr) ? { data: arr } : arr
+	, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+	, isNum = num => num === num && typeof num === 'number'
+	, isObj = obj => !!obj && obj.constructor === Object
+	, isStr = str => typeof str === 'string'
+	, isTruthy = s => s
+	, mapEntries = (obj, fn, sep) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(sep)
+	, normalizeRgb = rgb => isStr(rgb) ? (rgb = rgb.replace(/^#/, '').toUpperCase(), rgb.length === 6 ? 'FF' + rgb : rgb) : rgb
+	, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
+	, toColor = c => isStr(c) ? { rgb: normalizeRgb(c) } : assign({}, c, { rgb: normalizeRgb(c.rgb) })
+	, toXml = (name, attrs, childs) => (
+		attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + esc(a[1]) + '"' : '', ' '),
+		childs = mapEntries(childs, a => a[1] && a[1].map(b => toXml(a[0], b)).join(''), ''),
+		'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
+	)
+	, toOrderXml = (name, child, arr, order, fn) => toXml(name, { count: arr.length }, arr.map(
+		row => toXml(child, 0, order.map(key => row[key] === UNDEF ? '' : fn(key, row[key])).join(''))).join('')
+	)
 	, createFiles = workbook => {
-		var xmlHead = '<?xml version="1.0" encoding="UTF-8"?>'
-		, nsPackage = 'http://schemas.openxmlformats.org/package/2006/'
-		, nsRels = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
-		// Excel's epoch is January 1, 1900 (with a bug treating 1900 as leap year)
-		, excelEpoch = Date.UTC(1899, 11, 30)
-		, types = [
+		var types = [
 			{ PartName: '/xl/styles.xml', ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml' },
 			{ PartName: '/xl/workbook.xml', ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml' }
 		]
@@ -19,25 +38,6 @@
 			content: xmlHead + toXml('Relationships', { xmlns: nsPackage + 'relationships' }, { Relationship })
 		})
 		, sheets = ''
-		, assign = Object.assign
-		, dataArr = arr => Array.isArray(arr) ? { data: arr } : arr
-		, isNum = num => num === num && typeof num === 'number'
-		, isObj = obj => !!obj && obj.constructor === Object
-		, isStr = str => typeof str === 'string'
-		, isTruthy = s => s
-		, mapEntries = (obj, fn, sep) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(sep)
-		, normalizeRgb = rgb => isStr(rgb) ? (rgb = rgb.replace(/^#/, '').toUpperCase(), rgb.length === 6 ? 'FF' + rgb : rgb) : rgb
-		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
-		, toColor = c => isStr(c) ? { rgb: normalizeRgb(c) } : assign({}, c, { rgb: normalizeRgb(c.rgb) })
-		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
-		, toXml = (name, attrs, childs) => (
-			attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + esc(a[1]) + '"' : '', ' '),
-			childs = mapEntries(childs, a => a[1] && a[1].map(b => toXml(a[0], b)).join(''), ''),
-			'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
-		)
-		, toOrderXml = (name, child, arr, order, fn) => toXml(name, { count: arr.length }, arr.map(
-			row => toXml(child, 0, order.map(key => row[key] === UNDEF ? '' : fn(key, row[key])).join(''))).join('')
-		)
 		, numFmt = [
 			{ numFmtId: 164, formatCode: 'yyyy-mm-dd' },
 			{ numFmtId: 165, formatCode: 'yyyy-mm-dd hh:mm:ss' },
@@ -201,7 +201,6 @@
 		)
 		return files
 	}
-
 
 	exports.createFiles = createFiles
 	exports.createXlsx = (workbook, opts, next) => createZip(createFiles(workbook), opts, next)
