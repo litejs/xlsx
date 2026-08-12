@@ -20,25 +20,23 @@
 		})
 		, sheets = ''
 		, assign = Object.assign
-		, isArr = Array.isArray
-		, dataArr = arr => isArr(arr) ? { data: arr } : arr
+		, dataArr = arr => Array.isArray(arr) ? { data: arr } : arr
 		, isNum = num => num === num && typeof num === 'number'
 		, isObj = obj => !!obj && obj.constructor === Object
 		, isStr = str => typeof str === 'string'
 		, isTruthy = s => s
-		, mapEntries = (obj, fn, sep, childOrder) => !obj ? '' : isStr(obj) ? obj : (
-			childOrder ? childOrder.map(k => [k, obj[k]]) : Object.entries(obj)
-		).map(fn).filter(isTruthy).join(sep)
-		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
-		, defaultFont = { sz: 11, name: 'Calibri' }
-		, fontOrder = ['b', 'i', 'strike', 'condense', 'extend', 'outline', 'shadow', 'u', 'vertAlign', 'sz', 'color', 'name', 'family', 'charset', 'scheme']
+		, mapEntries = (obj, fn, sep) => !obj ? '' : isStr(obj) ? obj : Object.entries(obj).map(fn).filter(isTruthy).join(sep)
 		, normalizeRgb = rgb => isStr(rgb) ? (rgb = rgb.replace(/^#/, '').toUpperCase(), rgb.length === 6 ? 'FF' + rgb : rgb) : rgb
-		, toVal = (b, key) => Object.entries(b).reduce((accum, arr) => (accum[arr[0]] = [arr[1] === true ? {} : { [key]: arr[1] }], accum), {})
+		, toCol = num => (num > 25 ? toCol((0 | num / 26) - 1) : '') + String.fromCharCode(65 + num % 26)
+		, toColor = c => isStr(c) ? { rgb: normalizeRgb(c) } : assign({}, c, { rgb: normalizeRgb(c.rgb) })
 		, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
-		, toXml = (name, attrs, childs, wrapVal, childOrder) => (
+		, toXml = (name, attrs, childs) => (
 			attrs = mapEntries(attrs, a => a[1] != null ? a[0] + '="' + esc(a[1]) + '"' : '', ' '),
-			childs = mapEntries(childs, a => a[1] && a[1].map(wrapVal ? b => toXml(a[0], 0, toVal(b, wrapVal), 0, childOrder) : b => toXml(a[0], b)).join(''), '', wrapVal ? 0 : childOrder),
+			childs = mapEntries(childs, a => a[1] && a[1].map(b => toXml(a[0], b)).join(''), ''),
 			'<' + (attrs ? name + ' ' + attrs : name) + (childs ? '>' + childs + '</' + name + '>' : '/>')
+		)
+		, toOrderXml = (name, child, arr, order, fn) => toXml(name, { count: arr.length }, arr.map(
+			row => toXml(child, 0, order.map(key => row[key] === UNDEF ? '' : fn(key, row[key])).join(''))).join('')
 		)
 		, numFmt = [
 			{ numFmtId: 164, formatCode: 'yyyy-mm-dd' },
@@ -64,7 +62,8 @@
 		, styles = Object.entries(workbook.styles||{}).reduce((accum, a) => {
 			var newBorder = a[1].border
 			, newFill = a[1].fill
-			, newFont = a[1].font && assign({}, defaultFont, a[1].font)
+			, newFont = a[1].font && assign({ sz: 11, name: 'Calibri' }, a[1].font)
+			if (newFont && newFont.color) newFont.color = toColor(newFont.color)
 			if (isStr(newBorder)) newBorder = { left: newBorder, right: newBorder, top: newBorder, bottom: newBorder }
 			if (isStr(newFill)) newFill = { fgColor: newFill }
 			if (newFill) newFill = {
@@ -174,14 +173,22 @@
 				name: 'xl/styles.xml',
 				content: xmlHead + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
 				toXml('numFmts', { count: numFmt.length }, { numFmt }) +
-				toXml('fonts', { count: font.length }, { font }, 'val', fontOrder) +
+				toOrderXml(
+					'fonts', 'font', font,
+					['b', 'i', 'strike', 'condense', 'extend', 'outline', 'shadow', 'u', 'vertAlign', 'sz', 'color', 'name', 'family', 'charset', 'scheme'],
+					(k, v) => toXml(k, v === true ? 0 : isObj(v) ? v : { val: v })
+				) +
 				toXml('fills', { count: fill.length }, fill.map(
 					f => '<fill>' + toXml('patternFill', { patternType: f.pattern }, {
 						fgColor: f.fgColor ? [{ rgb: f.fgColor }] : UNDEF,
 						bgColor: f.bgColor ? [{ rgb: f.bgColor }] : UNDEF,
 					}) + '</fill>'
 				).join('')) +
-				toXml('borders', { count: border.length }, { border }, 'style', ['left', 'right', 'top', 'bottom', 'diagonal']) +
+				toOrderXml(
+					'borders', 'border', border,
+					['left', 'right', 'top', 'bottom', 'diagonal'],
+					(k, v) => toXml(k, { style: v && v.style || v }, v && v.color ? { color: [toColor(v.color)] } : 0)
+				) +
 				'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
 				toXml('cellXfs', { count: xf.length }, { xf }) +
 				'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +

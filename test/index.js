@@ -72,11 +72,20 @@ describe("xlsx", function() {
 				Border2: {
 					border: { top: 'double' },
 				},
+				Border3: {
+					border: { right: { style: 'medium', color: 'CC0000' }, bottom: { style: 'thin', color: { theme: 4 } } },
+				},
 				Fill1: {
 					fill: 'FFFF00',
 				},
 				Fill2: {
 					fill: { bgColor: 'FF9900', pattern: 'solid' },
+				},
+				Color1: {
+					font: { b: true, color: 'CC0000' },
+				},
+				Color2: {
+					font: { color: { theme: 1, tint: -0.25 } },
 				}
 			},
 			sheets: [
@@ -89,6 +98,8 @@ describe("xlsx", function() {
 						{ hidden: true, data: ['Hidden Row', 1] },
 						{ height: 25, data: ['Sized Row', { style: 'Border1', value: 1 }] },
 						[{ style: 'Fill1', value: 'Filled' }, { style: 'Fill2', value: 2 }],
+						[{ style: 'Color1', value: 'Red bold' }, { style: 'Color2', value: 'Themed' }],
+						[{ style: 'Border3', value: 'Colored border' }],
 					]
 				},
 			]
@@ -224,6 +235,43 @@ describe("xlsx", function() {
 		var caller = { b: true }
 		createFiles({ styles: { F: { font: caller } }, sheets: [{ data: [[1]] }] })
 		assert.equal(caller, { b: true }, 'caller font object left untouched')
+		assert.end()
+	})
+	test("border side color is a child element", function(assert) {
+		function border(def) {
+			return /<borders[^>]*>[\s\S]*?<\/borders>/.exec(createFiles({
+				styles: { B: { border: def } },
+				sheets: [{ data: [[{ style: 'B', value: 1 }]] }]
+			}).find(function(f) { return f.name === 'xl/styles.xml' }).content)[0]
+			.match(/<border>[\s\S]*?<\/border>|<border\/>/g).pop()
+		}
+		assert.equal(border({ left: { style: 'thin', color: 'FF0000' } }), '<border><left style="thin"><color rgb="FFFF0000"/></left></border>', 'color is a child of the side, not an attribute')
+		assert.equal(border({ diagonal: { style: 'thin', color: { theme: 2 } } }), '<border><diagonal style="thin"><color theme="2"/></diagonal></border>', 'CT_Color attributes carried through')
+		assert.equal(border({ left: { style: 'thin' } }), '<border><left style="thin"/></border>', 'object side without a color')
+		assert.equal(border('thin'), '<border><left style="thin"/><right style="thin"/><top style="thin"/><bottom style="thin"/></border>', 'string form unchanged')
+		assert.end()
+	})
+	test("font color is a CT_Color, never a val attribute", function(assert) {
+		function color(def) {
+			return /<color[^>]*\/>/.exec(/<fonts[^>]*>([\s\S]*?)<\/fonts>/.exec(createFiles({
+				styles: { F: { font: { color: def } } },
+				sheets: [{ data: [[{ style: 'F', value: 1 }]] }]
+			}).find(function(f) { return f.name === 'xl/styles.xml' }).content)[1])[0]
+		}
+		assert.equal(color('FF0000'), '<color rgb="FFFF0000"/>', 'string color becomes an ARGB rgb')
+		assert.equal(color('#ff0000'), '<color rgb="FFFF0000"/>', 'hash dropped, case raised')
+		assert.equal(color('FFFF0000'), '<color rgb="FFFF0000"/>', 'eight digits pass through')
+		assert.equal(color({ rgb: 'FF0000' }), '<color rgb="FFFF0000"/>', 'rgb inside an object normalized too')
+		assert.equal(color({ theme: 1, tint: -0.25 }), '<color theme="1" tint="-0.25"/>', 'other CT_Color attributes kept')
+		// color sits between sz and name in the CT_Font sequence
+		var font = /<font><sz[\s\S]*?<\/font>/.exec(createFiles({
+			styles: { F: { font: { name: 'Arial', color: 'FF0000', sz: 12 } } },
+			sheets: [{ data: [[{ style: 'F', value: 1 }]] }]
+		}).find(function(f) { return f.name === 'xl/styles.xml' }).content.match(/<font>[\s\S]*?<\/font>/g).pop())[0]
+		assert.equal(font, '<font><sz val="12"/><color rgb="FFFF0000"/><name val="Arial"/></font>', 'color ordered after sz, before name')
+		var caller = { color: { rgb: 'FF0000' } }
+		createFiles({ styles: { F: { font: caller } }, sheets: [{ data: [[1]] }] })
+		assert.equal(caller, { color: { rgb: 'FF0000' } }, 'caller color object left untouched')
 		assert.end()
 	})
 	test("styleSheet carries the named style tables", function(assert) {

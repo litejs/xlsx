@@ -1,16 +1,33 @@
+export interface ColorDef {
+	rgb?: string
+	theme?: number
+	tint?: number
+	indexed?: number
+	auto?: boolean
+}
+
 export interface FontDef {
 	sz?: number
 	name?: string
 	b?: boolean
 	i?: boolean
 	u?: boolean
+	color?: string | ColorDef
 }
 
+export interface BorderSideDef {
+	style?: string
+	color?: string | ColorDef
+}
+
+export type BorderSide = string | BorderSideDef | null
+
 export interface BorderSides {
-	left?: string
-	right?: string
-	top?: string
-	bottom?: string
+	left?: BorderSide
+	right?: BorderSide
+	top?: BorderSide
+	bottom?: BorderSide
+	diagonal?: BorderSide
 }
 
 export interface FillDef {
