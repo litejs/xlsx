@@ -6,5 +6,11 @@
       ".github/*.json",
       "*.js"
     ]
+  },
+  "test": {
+    "tz": "UTC",
+    "_": [
+      "test/index.js"
+    ]
   }
 }
