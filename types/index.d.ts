@@ -36,7 +36,18 @@ export interface FillDef {
 	pattern?: string
 }
 
+export interface AlignmentDef {
+	horizontal?: "general" | "left" | "center" | "right" | "fill" | "justify" | "centerContinuous" | "distributed"
+	vertical?: "top" | "center" | "bottom" | "justify" | "distributed"
+	wrapText?: boolean
+	shrinkToFit?: boolean
+	textRotation?: number
+	indent?: number
+	readingOrder?: number
+}
+
 export interface StyleDef {
+	alignment?: AlignmentDef
 	font?: FontDef
 	border?: string | BorderSides
 	fill?: string | FillDef

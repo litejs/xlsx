@@ -62,6 +62,10 @@ const fileAsUint8Array = await createXlsx({
 })
 ```
 
+Styles accept an `alignment` object, for example
+`{ alignment: { vertical: "center", wrapText: true } }`.
+Alignment is preserved when a cell also uses a date or datetime format.
+
 ## Contributing
 
 Follow [Coding Style Guide](https://github.com/litejs/litejs/wiki/Style-Guide),

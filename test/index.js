@@ -4,6 +4,26 @@ describe("xlsx", function() {
 	var { createFiles, createXlsx } = require("..")
 	, compressionSuported = typeof CompressionStream !== "undefined" && typeof Response !== "undefined"
 
+	test("cell alignment and formatted styles", function(assert) {
+		var files = createFiles({
+			styles: {
+				Wrapped: { font: { b: true }, alignment: { vertical: 'center', wrapText: true } },
+				Unwrapped: { alignment: { horizontal: 'right', wrapText: false } }
+			},
+			sheets: [[[
+				{ style: 'Wrapped', value: 'line one\nline two' },
+				{ style: 'Wrapped', format: 'date', value: new Date(1514900750001) },
+				{ style: 'Unwrapped', value: 10 }
+			]]]
+		})
+		, styles = files.find(f => f.name === 'xl/styles.xml').content
+		assert.equal((styles.match(/<alignment vertical="center" wrapText="true"\/>/g) || []).length, 2, 'alignment survives format merging')
+		assert.ok(styles.includes('applyAlignment="1"'), 'alignment enabled on cell style')
+		assert.ok(styles.includes('<alignment horizontal="right" wrapText="false"/>'), 'false remains explicit')
+		assert.ok(!styles.includes('alignment="'), 'alignment is a child, never an attribute')
+		assert.end()
+	})
+
 	function sheet1(data, sheet) {
 		return createFiles({ sheets: [{ data, ...sheet }] }).find(f => f.name === 'xl/worksheets/sheet1.xml').content
 	}

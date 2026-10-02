@@ -72,6 +72,8 @@
 				bgColor: normalizeRgb(newFill.bgColor)
 			}
 			a[1] = xf.push({
+				alignment: a[1].alignment,
+				applyAlignment: a[1].alignment ? 1 : UNDEF,
 				fontId: newFont ? font.push(newFont) - 1 : 0,
 				applyFont: newFont ? 1 : UNDEF,
 				borderId: newBorder ? border.push(newBorder) - 1 : UNDEF,
@@ -190,7 +192,11 @@
 					(k, v) => toXml(k, { style: v && v.style || v }, v && v.color ? { color: [toColor(v.color)] } : 0)
 				) +
 				'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
-				toXml('cellXfs', { count: xf.length }, { xf }) +
+				toXml('cellXfs', { count: xf.length }, xf.map(
+					f => toXml('xf', assign({}, f, { alignment: UNDEF }), {
+						alignment: f.alignment ? [f.alignment] : UNDEF
+					})
+				).join('')) +
 				'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
 				'</styleSheet>'
 			},
