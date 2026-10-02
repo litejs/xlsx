@@ -1,6 +1,7 @@
 import { createFiles, createXlsx, Workbook, XlsxFile } from ".."
 
 var workbook: Workbook = {
+	formulas: false,
 	styles: {
 		bold: { font: { sz: 11, name: "Calibri", b: true } },
 		border: { border: "thin" },

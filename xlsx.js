@@ -119,7 +119,7 @@
 							isObj(val) ? (tmp = val, val = val.value, tmp = getXf(tmp, val instanceof Date)) : (tmp = '')
 						) + (
 							val && isStr(val) ? (
-								val[0] === '=' ? '"><f>' + esc(val.slice(1)) + '</f>' :
+								val[0] === '=' && workbook.formulas !== false ? '"><f>' + esc(val.slice(1)) + '</f>' :
 								'" t="inlineStr"><is><t' + (/^\s|\s$/.test(val = esc(val)) ? ' xml:space="preserve"' : '') + '>' + val + '</t></is>'
 							) :
 							val !== val || isNum(val) ? (isFinite(val) ? '"><v>' + val + '</v>' : '" t="e"><v>#NUM!</v>') :

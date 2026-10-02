@@ -83,6 +83,7 @@ export interface SheetObject {
 export type Sheet = CellValue[][] | SheetObject
 
 export interface Workbook {
+	formulas?: boolean
 	styles?: Record<string, StyleDef>
 	sheets: (Sheet | null | undefined)[]
 }

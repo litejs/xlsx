@@ -62,6 +62,10 @@ const fileAsUint8Array = await createXlsx({
 })
 ```
 
+To export untrusted text, set `formulas: false` on the workbook.
+Strings starting with `=` are then literal text, including styled cells.
+The default retains formula detection for existing workbooks.
+
 ## Contributing
 
 Follow [Coding Style Guide](https://github.com/litejs/litejs/wiki/Style-Guide),
@@ -73,4 +77,3 @@ run tests `npm install; npm test`.
 [GitHub repo](https://github.com/litejs/xlsx) |
 [npm package](https://npmjs.org/package/@litejs/xlsx) |
 [Buy Me A Tea][6]
-
