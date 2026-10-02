@@ -4,6 +4,17 @@ describe("xlsx", function() {
 	var { createFiles, createXlsx } = require("..")
 	, compressionSuported = typeof CompressionStream !== "undefined" && typeof Response !== "undefined"
 
+	test("XML 1.0 characters", function(assert) {
+		var text = 'A\u0000\u0001\u0008\u000b\u000c\u000e\u001f\ud800B\udfff\ufffe\uffffC\t\n\r\ud83d\ude00'
+		, clean = 'ABC\t\n\r\ud83d\ude00'
+		, files = createFiles({ sheets: [{ name: text, data: [[text]] }] })
+		, workbook = files.find(f => f.name === 'xl/workbook.xml').content
+		, sheet = files.find(f => f.name === 'xl/worksheets/sheet1.xml').content
+		assert.ok(workbook.includes('name="' + clean + '"'), 'attributes omit invalid code points')
+		assert.ok(sheet.includes('>' + clean + '</t>'), 'text preserves whitespace and supplementary characters')
+		assert.end()
+	})
+
 	function sheet1(data, sheet) {
 		return createFiles({ sheets: [{ data, ...sheet }] }).find(f => f.name === 'xl/worksheets/sheet1.xml').content
 	}

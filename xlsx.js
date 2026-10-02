@@ -10,7 +10,7 @@
 	, excelEpoch = Date.UTC(1899, 11, 30)
 	, assign = Object.assign
 	, dataArr = arr => Array.isArray(arr) ? { data: arr } : arr
-	, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+	, esc = val => ('' + val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\uFFFE\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF]/g, c => c.length === 2 ? c : '')
 	, isNum = num => num === num && typeof num === 'number'
 	, isObj = obj => !!obj && obj.constructor === Object
 	, isStr = str => typeof str === 'string'
@@ -207,4 +207,3 @@
 
 // this is `exports` in module and `window` in browser
 })(this, Object) // jshint ignore:line
-
