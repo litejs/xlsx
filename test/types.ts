@@ -9,6 +9,7 @@ var workbook: Workbook = {
 	sheets: [
 		{
 			name: "Products",
+			mergeCells: ["A1:C1"],
 			cols: [{ width: 20, bestFit: true, customWidth: true }, 0, "15"],
 			freeze: { rows: 1, cols: 0 },
 			data: [

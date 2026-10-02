@@ -152,7 +152,10 @@
 						(cols ? toXml('cols', 0, { col: (isStr(cols) ? cols.split(',') : cols).map(
 							(w, col) => w ? assign({ min: col + 1, max: col + 1 }, isStr(w) ? { width: w, customWidth: 1 } : w) : 0
 						).filter(isTruthy)}) : '') +
-						'<sheetData>' + sheetData + '</sheetData></worksheet>'
+						'<sheetData>' + sheetData + '</sheetData>' +
+						(sheet.mergeCells && sheet.mergeCells.length ? toXml('mergeCells', { count: sheet.mergeCells.length }, {
+							mergeCell: sheet.mergeCells.map(ref => ({ ref }))
+						}) : '') + '</worksheet>'
 				}
 			}
 		)

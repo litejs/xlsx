@@ -4,6 +4,18 @@ describe("xlsx", function() {
 	var { createFiles, createXlsx } = require("..")
 	, compressionSuported = typeof CompressionStream !== "undefined" && typeof Response !== "undefined"
 
+	test("merged cells", function(assert) {
+		var files = createFiles({ sheets: [
+			{ data: [['Title', null, null], ['Subtitle']], mergeCells: ['A1:C1', 'A2:C2'] },
+			{ data: [], mergeCells: [] }
+		] })
+		, sheet = files.find(f => f.name === 'xl/worksheets/sheet1.xml').content
+		, empty = files.find(f => f.name === 'xl/worksheets/sheet2.xml').content
+		assert.ok(sheet.includes('</sheetData><mergeCells count="2"><mergeCell ref="A1:C1"/><mergeCell ref="A2:C2"/></mergeCells>'), 'ranges follow sheetData')
+		assert.ok(!empty.includes('<mergeCells'), 'empty merge list emits no element')
+		assert.end()
+	})
+
 	function sheet1(data, sheet) {
 		return createFiles({ sheets: [{ data, ...sheet }] }).find(f => f.name === 'xl/worksheets/sheet1.xml').content
 	}

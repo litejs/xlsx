@@ -62,6 +62,9 @@ const fileAsUint8Array = await createXlsx({
 })
 ```
 
+Sheets accept `mergeCells: ["A1:D1", "B2:D2"]` to merge cell ranges.
+Place the value in the top-left cell of each range.
+
 ## Contributing
 
 Follow [Coding Style Guide](https://github.com/litejs/litejs/wiki/Style-Guide),
